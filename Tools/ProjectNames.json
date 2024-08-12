@@ -13,5 +13,8 @@
   },
   {
     "Name": "Appgw_Webapp_backend"
+  },
+  {
+    "Name": "AGC_Deployment"
   }
 ]

@@ -1,12 +1,8 @@
-param DeploymentLocation_param string = 'centralus'
-param KeyVaultName_param string = 'DanWheelerVaultStr'
-param automation_ManagedIdentityName_param string = 'DWAutomation-servicePrincipal'
-param keyvaultmanagedidentity_name_param string = 'DWKeyVaultManagedIdentity'
+param KeyVaultName   string = 'DanWheelerVaultStr'
+param automation_ManagedIdentityName   string = 'DWAutomation-servicePrincipal'
+param keyvaultmanagedidentity_name   string = 'DWKeyVaultManagedIdentity'
 
-var DeploymentLocation = DeploymentLocation_param
-var KeyVaultName = KeyVaultName_param
-var automation_ManagedIdentityName = automation_ManagedIdentityName_param
-var keyvaultmanagedidentity_name = keyvaultmanagedidentity_name_param
+var DeploymentLocation = resourceGroup().location
 
 resource automation_ManagedID 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
   name: automation_ManagedIdentityName

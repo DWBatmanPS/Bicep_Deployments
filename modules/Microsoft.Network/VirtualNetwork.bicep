@@ -1,6 +1,3 @@
-@description('Azure Datacenter that the resource is deployed to')
-param location string
-
 @description('Name of the Virtual Network')
 param virtualNetwork_Name string
 
@@ -11,10 +8,10 @@ Example:
 param dnsServers array = []
 
 @description('Name of the General Network Security Group')
-param networkSecurityGroup_Default_Name string = '${virtualNetwork_Name}_NSG_General'
+var networkSecurityGroup_Default_Name = '${virtualNetwork_Name}_NSG_General'
 
 @description('Name of the General Route Table')
-param routeTable_Name string = '${virtualNetwork_Name}_RT_General'
+var routeTable_Name = '${virtualNetwork_Name}_RT_General'
 
 param virtualNetwork_AddressPrefix string
 
@@ -34,6 +31,7 @@ param subnet_Names array = [
   'PrivateResolver_Outbound'
 ]
 
+var location = resourceGroup().location
 var baseAddress = split(virtualNetwork_AddressPrefix, '/')[0]
 var baseOctets = split(baseAddress, '.')
 
