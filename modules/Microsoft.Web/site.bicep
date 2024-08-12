@@ -1,6 +1,3 @@
-@description('Region that the resources are deployed to')
-param location string
-
 @description('Name of the App Service Plan')
 param appServicePlan_Name string
 
@@ -20,6 +17,7 @@ param appServiceSubnet_ID string = ''
 param tagValues object = {}
 
 var virtualNetwork_Nameexists = empty(virtualNetwork_Name) ? false : true
+var location = resourceGroup().location
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01' = {
   name: appServicePlan_Name
