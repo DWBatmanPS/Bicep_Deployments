@@ -1,0 +1,17 @@
+[
+  {
+    "Name": "AFDx_Deployment"
+  },
+  {
+    "Name": "AGIC_StandalonePowershell"
+  },
+  {
+    "Name": "Domain_resources"
+  },
+  {
+    "Name": "AZFW_Deployment"
+  },
+  {
+    "Name": "Appgw_Webapp_backend"
+  }
+]
