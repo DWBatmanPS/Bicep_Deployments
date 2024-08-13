@@ -38,6 +38,8 @@ param weight array = [
   1
 ]
 
+param customHostNeeded bool = false
+
 var location = resourceGroup().location
 var port = probeProtocol == 'HTTP' ? 80 : probeProtocol == 'HTTPS' ? 443 : customPort
 
@@ -62,6 +64,11 @@ resource ExternalEndpoint 'Microsoft.Network/trafficmanagerprofiles/externalendp
   parent: ATM
   name: endpointName
   properties: {
+    customHeaders: (customHostNeeded) ? [{
+        name: 'Host'
+        value: endpoint[i]
+      } 
+    ] : null
     target: endpoint[i]
     endpointStatus: 'Enabled'
     weight: weight[i]
