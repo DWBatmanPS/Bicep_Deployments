@@ -19,5 +19,8 @@
   },
   {
     "Name": "ATM_Deployment"
+  },
+  {
+    "Name": "AGIC_Helm_Upgrade"
   }
 ]

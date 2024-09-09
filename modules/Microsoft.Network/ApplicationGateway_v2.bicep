@@ -1,5 +1,4 @@
-@description('Region that the resources are deployed to')
-param location string
+
 
 @description('Name of the Application Gateway')
 param applicationGateway_Name string
@@ -27,16 +26,18 @@ param isWAF bool = false
 
 param isE2ESSL bool = false
 
+param nossl bool = false
+
 param tagValues object = {}
 
 @description('Application Gateway sub resource IDs')
 var frontendID = resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', applicationGateway_Name, 'fip_pub')
-var frontendPortID = resourceId('Microsoft.Network/applicationGateways/frontendPorts', applicationGateway_Name, 'port_443')
-var httpListenerID = resourceId('Microsoft.Network/applicationGateways/httpListeners', applicationGateway_Name, 'https_listener')
+var frontendPortID = (nossl) ? resourceId('Microsoft.Network/applicationGateways/frontendPorts', applicationGateway_Name, 'port_80') : resourceId('Microsoft.Network/applicationGateways/frontendPorts', applicationGateway_Name, 'port_443')
+var httpListenerID = (nossl) ? resourceId('Microsoft.Network/applicationGateways/httpListeners', applicationGateway_Name, 'http_listener') : resourceId('Microsoft.Network/applicationGateways/httpListeners', applicationGateway_Name, 'https_listener')
 var backendAddressPoolID = resourceId('Microsoft.Network/applicationGateways/backendAddressPools', applicationGateway_Name, 'backend_pool')
 var backendHTTPSettingsID = resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', applicationGateway_Name, 'http-settings')
 var backendHTTPSSettingsID = resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', applicationGateway_Name, 'https-settings')
-
+var location = resourceGroup().location
 
 resource applicationGatewayWAF 'Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies@2022-11-01' = if (isWAF) {
   name: applicationGatewayWAF_Name
@@ -115,14 +116,14 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2022-11-01' =
         }
       }
     ]
-    sslCertificates: [
+    sslCertificates: (nossl) ? [
       {
         name: 'danwheelerrockswildcard'
         properties: {
           keyVaultSecretId: '${keyVaultUrl}/secrets/${certname}'
         }
       }
-    ]
+    ] : null
     trustedRootCertificates: []
     trustedClientCertificates: []
     sslProfiles: []
@@ -187,7 +188,7 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2022-11-01' =
     ]
     httpListeners: [
       {
-        name: 'https_listener'
+        name: (nossl) ? 'http_listener' : 'https_listener'
         properties: {
           frontendIPConfiguration: {
             id: frontendID
@@ -195,10 +196,10 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2022-11-01' =
           frontendPort: {
             id: frontendPortID
           }
-          protocol: 'Https'
+          protocol: (nossl) ? 'Http' : 'Https'
           hostNames: []
           requireServerNameIndication: false
-          sslCertificate: { 
+          sslCertificate: (nossl) ? null :{ 
             id: resourceId('Microsoft.Network/applicationGateways/sslCertificates', applicationGateway_Name, 'danwheelerrockswildcard')
           }
         }
@@ -208,7 +209,7 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2022-11-01' =
     urlPathMaps: []
     requestRoutingRules: [
       {
-        name: 'httpsroutingrule'
+        name: (nossl) ? 'httproutingrule' : 'httpsroutingrule'
         properties: {
           ruleType: 'Basic'
           priority: 100

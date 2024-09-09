@@ -1,6 +1,3 @@
-@description('Azure Datacenter location that the main resouces will be deployed to.')
-param location string
-
 @description('Name of the Azure Firewall within the vHub A')
 param azureFirewall_Name string
 
@@ -24,6 +21,8 @@ param azureFirewall_ManagementSubnet_ID string = ''
 param useForceTunneling bool = false
 
 param tagValues object = {}
+
+var location = resourceGroup().location
 
 resource azureFirewall_PIP 'Microsoft.Network/publicIPAddresses@2022-11-01' = {
   name: '${azureFirewall_Name}_PIP'

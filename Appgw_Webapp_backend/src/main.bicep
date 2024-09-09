@@ -17,14 +17,12 @@ param applicationGateWayName string = 'dwwebapp-appgw'
 
 
 param keyVaultName string = 'DanWheelerVaultStr'
-var location = resourceGroup().location
 @description('The name of the App Service application to create. This must be globally unique.')
 var appName = 'DW-${uniqueString(resourceGroup().id)}'
 
 module virtualNetwork '../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
   name: virtualNetworkName
   params: {
-    location: location
     virtualNetwork_Name: virtualNetworkName
     virtualNetwork_AddressPrefix: virtualNetworkPrefix
     dnsServers: dnsServers
@@ -35,7 +33,6 @@ module virtualNetwork '../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
 module appgw '../../modules/Microsoft.Network/ApplicationGateway_v2.bicep' = {
   name: applicationGateWayName
   params: {
-    location: location
     applicationGateway_Name: applicationGateWayName
     applicationGateway_SubnetID: resourceId('Microsoft.Network/virtualNetworks/subnets', virtualNetworkName, 'AGSubnet')
     publicIP_ApplicationGateway_Name: publicIPAddressName
@@ -53,7 +50,6 @@ module appgw '../../modules/Microsoft.Network/ApplicationGateway_v2.bicep' = {
 module Webapp '../../modules/Microsoft.Web/site.bicep' = {
   name: 'Webapp'
   params: {
-    location: location
     site_Name: appName
     appServicePlan_Name: appServicePlan
   }

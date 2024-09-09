@@ -1,9 +1,10 @@
 param policyname string = 'azfwpolicy'
-param location string = 'centralus'
 param dnsenabled bool = true
 param azfwsku string = 'Standard'
 param learnprivaterages string = 'Enabled'
 param aksnet_rule_pri int = 100
+
+var location = resourceGroup().location
 
 resource azfwpolicy 'Microsoft.Network/firewallPolicies@2023-11-01' = {
   name: policyname

@@ -182,30 +182,6 @@ resource networkSecurityGroup_ApplicationGateway 'Microsoft.Network/networkSecur
 //   }
 // }
 
-output general_SubnetID string = virtualNetwork.properties.subnets[0].id
-output privateEndpoint_SubnetID string = virtualNetwork.properties.subnets[1].id
-output privateLinkService_SubnetID string = virtualNetwork.properties.subnets[2].id
-output applicationGateway_SubnetID string = virtualNetwork.properties.subnets[3].id 
-output appService_SubnetID string = virtualNetwork.properties.subnets[4].id
-output gateway_SubnetID string = virtualNetwork.properties.subnets[5].id
-output azureFirewall_SubnetID string = virtualNetwork.properties.subnets[6].id
-output azureFirewallManagement_SubnetID string = virtualNetwork.properties.subnets[7].id
-output bastion_SubnetID string = virtualNetwork.properties.subnets[8].id
-output privateResolver_Inbound_SubnetID string = virtualNetwork.properties.subnets[9].id
-output privateResolver_Outbound_SubnetID string = virtualNetwork.properties.subnets[10].id
-
-output general_Subnet_AddressPrefix string = virtualNetwork.properties.subnets[0].properties.addressPrefix
-output privateEndpoint_Subnet_AddressPrefix string = virtualNetwork.properties.subnets[1].properties.addressPrefix
-output privateLinkService_Subnet_AddressPrefix string = virtualNetwork.properties.subnets[2].properties.addressPrefix
-output applicationGateway_Subnet_AddressPrefix string = virtualNetwork.properties.subnets[3].properties.addressPrefix 
-output appService_Subnet_AddressPrefix string = virtualNetwork.properties.subnets[4].properties.addressPrefix
-output gateway_Subnet_AddressPrefix string = virtualNetwork.properties.subnets[5].properties.addressPrefix
-output azureFirewall_Subnet_AddressPrefix string = virtualNetwork.properties.subnets[6].properties.addressPrefix
-output azureFirewallManagement_Subnet_AddressPrefix string = virtualNetwork.properties.subnets[7].properties.addressPrefix
-output bastion_Subnet_AddressPrefix string = virtualNetwork.properties.subnets[8].properties.addressPrefix
-output privateResolver_Inbound_Subnet_AddressPrefix string = virtualNetwork.properties.subnets[9].properties.addressPrefix
-output privateResolver_Outbound_Subnet_AddressPrefix string = virtualNetwork.properties.subnets[10].properties.addressPrefix
-
 output virtualNetwork_Name string = virtualNetwork.name
 output virtualNetwork_ID string = virtualNetwork.id
 output virtualNetwork_AddressPrefix string = virtualNetwork.properties.addressSpace.addressPrefixes[0]

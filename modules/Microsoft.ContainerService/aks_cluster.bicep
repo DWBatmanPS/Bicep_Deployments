@@ -14,7 +14,7 @@ param linuxadmin string = 'AKSAdmin'
 
 var aksClusterLocation = resourceGroup().location
 var aksClusterSubnetId = resourceId('Microsoft.Network/virtualNetworks/subnets', VnetName, aksClusterSubnetname)
-var aksagentpoolname = '${aksClusterName}-agentpool'
+var truncatedagentpoolname = substring(aksClusterName, 0, 11)
 
 resource k8s 'Microsoft.ContainerService/managedClusters@2024-01-01' = {
   name: aksClusterName
@@ -26,7 +26,7 @@ resource k8s 'Microsoft.ContainerService/managedClusters@2024-01-01' = {
     kubernetesVersion: aksClusterKubernetesVersion
     agentPoolProfiles: [
       {
-        name: aksagentpoolname
+        name: truncatedagentpoolname
         count: aksClusterNodeCount
         vmSize: aksClusterNodeSize
         vnetSubnetID: aksClusterSubnetId
