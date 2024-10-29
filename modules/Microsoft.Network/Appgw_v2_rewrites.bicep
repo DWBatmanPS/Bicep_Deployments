@@ -235,6 +235,9 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2024-05-01' =
           } :{
             id: backendHTTPSettingsID
           }
+          rewriteRuleSet: {
+            id: resourceId('Microsoft.Network/applicationGateways/rewriteRuleSets', applicationGateway_Name, 'rewriteRule')
+          }
         }
       }
     ]
@@ -250,7 +253,7 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2024-05-01' =
                 {
                   ignoreCase: true
                   negate: false
-                  pattern: '(.*)'
+                  pattern: '.*'
                   variable: 'http_resp_set-cookie'
                 }
               ]
@@ -262,7 +265,7 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2024-05-01' =
                     headerValueMatcher: {
                       ignoreCase: true
                       negate: false
-                      pattern: '.*'
+                      pattern: '(cookie1=.*)'
                     }
                   }
                 ]
