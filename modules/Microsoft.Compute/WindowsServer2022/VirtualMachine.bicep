@@ -153,7 +153,7 @@ resource virtualMachine_NetworkWatcherExtension 'Microsoft.Compute/virtualMachin
   tags: tagValues
 }
 
-resource virtualMachine_CustomScriptExtension 'Microsoft.Compute/virtualMachines/extensions@2021-11-01' = {
+resource virtualMachine_CustomScriptExtension 'Microsoft.Compute/virtualMachines/extensions@2021-11-01' = if (virtualMachine_ScriptFileName != '') {
   parent: virtualMachine_Windows
   name: 'installcustomscript'
   location: location

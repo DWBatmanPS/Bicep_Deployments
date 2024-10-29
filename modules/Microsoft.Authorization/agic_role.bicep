@@ -52,7 +52,7 @@ resource agic_networkcontrib 'Microsoft.Authorization/roleAssignments@2020-04-01
 resource agic_reader 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
   name: guid(serviceprincipal_client_Id, reader_role)
   properties: {
-    condition: VnetId
+    condition: resourceGroup().id
     conditionVersion: '2.0'
     principalId:  serviceprincipal_client_Id
     roleDefinitionId: reader_role_deffinition.id

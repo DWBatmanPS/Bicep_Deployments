@@ -65,7 +65,7 @@ resource azureFirewall 'Microsoft.Network/azureFirewalls@2022-11-01' = {
       tier: azureFirewall_SKU
     }
     additionalProperties: {}
-    managementIpConfiguration: (useForceTunneling) ? null : {
+    managementIpConfiguration: (useForceTunneling) ? {
       name: 'managementipconfig'
       properties: {
         publicIPAddress: {
@@ -75,7 +75,7 @@ resource azureFirewall 'Microsoft.Network/azureFirewalls@2022-11-01' = {
           id: azureFirewall_ManagementSubnet_ID
         }
       }
-     }
+     } : null
     ipConfigurations: [
        {
          name: 'ipconfiguration'

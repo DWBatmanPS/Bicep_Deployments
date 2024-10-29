@@ -5,10 +5,16 @@ param AssociationName string = 'Association'
 param VnetName string = 'vnet'
 param subnetNames array = []
 param resourcetags object = {}
+param targetSubnetName string = 'AGCSubnet'
 
 // Variables
 var DeploymentLocation = resourceGroup().location
-var SubnetIDs = [for subnetName in subnetNames: resourceId('Microsoft.Network/virtualNetworks/subnets', VnetName, subnetName)]
+
+var targetSubnetExists = contains(subnetNames, targetSubnetName)
+var selectedSubnetName = targetSubnetExists ? targetSubnetName : 'AGCSubnet'
+var selectedSubnetID = resourceId('Microsoft.Network/virtualNetworks/subnets', VnetName, selectedSubnetName)
+
+
 
 resource applicationGatewayForContainers 'Microsoft.ServiceNetworking/trafficControllers@2023-11-01' = {
   name: AGCname
@@ -23,17 +29,17 @@ resource agc_frontend 'Microsoft.ServiceNetworking/trafficControllers/frontends@
   properties: {}
 }
 
-resource agc_subnet_association 'Microsoft.ServiceNetworking/trafficControllers/associations@2023-11-01' = [for (subnetName, i) in subnetNames: {
+resource agc_subnet_association 'Microsoft.ServiceNetworking/trafficControllers/associations@2023-11-01' = {
   parent: applicationGatewayForContainers
   location: DeploymentLocation
-  name: '${AssociationName}-${subnetNames[i]}'
+  name: '${AssociationName}-${selectedSubnetName}'
   properties: {
     associationType: 'subnets'
     subnet: {
-      id: SubnetIDs[i]
+      id: selectedSubnetID
     }
   }
-}]
+}
 
 output AGC_ID string = applicationGatewayForContainers.id
 output AGC_Frontend_ID string = agc_frontend.properties.fqdn

@@ -16,7 +16,7 @@ param aksserviceCidr string = '192.168.16.0/20'
 param aksinternalDNSIP string = '192.168.16.10'
 param appgwname string = 'agic-appgw'
 param publicIP_ApplicationGateway_Name string = 'agic-appgwip'
-param serviceprincipal_client_Id string
+//param serviceprincipal_client_Id string
 
 
 module AKSCluster '../../modules/Microsoft.ContainerService/aks_cluster.bicep' = {
@@ -57,11 +57,15 @@ module AppGateway '../../modules/Microsoft.Network/ApplicationGateway_v2.bicep' 
   }
 }
 
- module authorization '../../modules/Microsoft.Authorization/agic_role.bicep' = {
+/*  module authorization '../../modules/Microsoft.Authorization/agic_role.bicep' = {
   name: 'agic_role'
   params: {
     serviceprincipal_client_Id: serviceprincipal_client_Id 
     appgwname: appgwname
     vnetName: VnetName
   }
-} 
+  dependsOn: [
+    AppGateway
+    Vnet
+  ]
+}  */

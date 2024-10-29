@@ -22,6 +22,7 @@ param subnet_Names array = [
   'PrivateEndpoints'
   'PrivateLinkService'
   'ApplicationGatewaySubnet'
+  'AGCSubnet'
   'AppServiceSubnet'
   'GatewaySubnet'
   'AzureFirewallSubnet'
@@ -30,6 +31,10 @@ param subnet_Names array = [
   'PrivateResolver_Inbound'
   'PrivateResolver_Outbound'
 ]
+
+param nvaIpAddress string = '10.0.0.4'
+param deployudr bool = true
+param customsourceaddresscidr string = '208.107.184.241/32'
 
 var location = resourceGroup().location
 var baseAddress = split(virtualNetwork_AddressPrefix, '/')[0]
@@ -53,17 +58,41 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' = {
         name: subnet_Name
         properties: {
           addressPrefix: '${baseOctets[0]}.${baseOctets[1]}.${index}.0/24'
-          }
+          networkSecurityGroup: (subnet_Name != 'AGCSubnet' && subnet_Name != 'AzureFirewallSubnet' && subnet_Name != 'AzureFirewallManagementSubnet' && subnet_Name != 'GatewaySubnet' && subnet_Name != 'AGSubnet') ? {
+            id: networkSecurityGroup.id
+          } : null
+          routeTable: (deployudr && (subnet_Name != 'AzureFirewallSubnet' && subnet_Name != 'AzureFirewallManagementSubnet' && subnet_Name != 'GatewaySubnet' && subnet_Name != 'AGCSubnet' && subnet_Name != 'AGSubnet')) ? {
+            id: routeTable.id
+          } : null
+          delegations: (subnet_Name == 'AGCSubnet') ? [
+            {
+              name: 'Microsoft.ServiceNetworking/trafficControllers'
+              properties: {
+                serviceName: 'Microsoft.ServiceNetworking/trafficControllers'
+              }
+            }
+          ] : null
+        }
       }
     ]
   }
 }
 
-resource routeTable 'Microsoft.Network/routeTables@2023-02-01' = {
+resource routeTable 'Microsoft.Network/routeTables@2023-02-01' = if (deployudr){
   name: routeTable_Name
   location: location
   properties: {
     disableBgpRoutePropagation: false
+    routes: [
+      { id: resourceId('Microsoft.Network/routeTables/routes', routeTable_Name, 'VirtualNetworkRoute')
+        name: 'VirtualNetworkRoute'
+        properties: {
+          addressPrefix: virtualNetwork_AddressPrefix
+          nextHopType: 'VirtualAppliance'
+          nextHopIpAddress: nvaIpAddress
+        }
+      }
+    ]
   }
   tags: tagValues
 }
@@ -72,6 +101,82 @@ resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2022-09-0
   name: networkSecurityGroup_Default_Name
   location: location
   properties: {
+    securityRules: [
+      {
+        id: resourceId('Microsoft.Network/networkSecurityGroups/securityRules', networkSecurityGroup_Default_Name, 'AllowCustomInbound')
+        name: 'AllowCustomInbound'
+        properties: {
+          description: 'Allow Custom Inbound'
+          protocol: '*'
+          sourcePortRange: '*'
+          sourceAddressPrefix: customsourceaddresscidr
+          destinationAddressPrefix: 'VirtualNetwork'
+          access: 'Allow'
+          priority: 100
+          direction: 'Inbound'
+          destinationPortRanges: [
+            '22'
+            '3389'
+          ]
+        }
+      }
+      /* {
+        id: resourceId('Microsoft.Network/networkSecurityGroups/securityRules', networkSecurityGroup_Default_Name, 'AllowCorp')
+        name: 'AllowCorp'
+        properties: {
+          description: 'Allow corp and saw inbound'
+          protocol: '*'
+          sourcePortRange: '*'
+          sourceAddressPrefixes: [
+            'CorpNetPublic'
+            'CorpNetSaw'
+          ]
+          destinationAddressPrefix: 'VirtualNetwork'
+          access: 'Allow'
+          priority: 101
+          direction: 'Inbound'
+          destinationPortRanges: [
+            '22'
+            '3389'
+          ]
+        }
+      } */
+      {
+        id: resourceId('Microsoft.Network/networkSecurityGroups/securityRules', networkSecurityGroup_Default_Name, 'Allow443inbound')
+        name: 'Allow443inbound'
+        properties: {
+          description: 'Allow 443 inbound'
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          sourceAddressPrefix: 'Internet'
+          destinationAddressPrefix: 'VirtualNetwork'
+          access: 'Allow'
+          priority: 102
+          direction: 'Inbound'
+          destinationPortRanges: [
+            '443'
+          ]
+        }
+      }
+      {
+        name: 'AllowGatewayManager'
+        properties: {
+          description: 'Allow GatewayManager'
+          protocol: '*'
+          sourcePortRange: '*'
+          destinationPortRange: '65200-65535'
+          sourceAddressPrefix: 'GatewayManager'
+          destinationAddressPrefix: '*'
+          access: 'Allow'
+          priority: 1003
+          direction: 'Inbound'
+          sourcePortRanges: []
+          destinationPortRanges: []
+          sourceAddressPrefixes: []
+          destinationAddressPrefixes: []
+        }
+      }
+    ]
   }
   tags: tagValues
 }

@@ -12,11 +12,13 @@ param aksserviceCidr string
 param aksinternalDNSIP string
 param linuxadmin string = 'AKSAdmin'
 
+var substringLength = 10
+var actualLength = length(aksClusterName) < substringLength ? length(aksClusterName) : substringLength
 var aksClusterLocation = resourceGroup().location
 var aksClusterSubnetId = resourceId('Microsoft.Network/virtualNetworks/subnets', VnetName, aksClusterSubnetname)
-var truncatedagentpoolname = substring(aksClusterName, 0, 11)
+var truncatedagentpoolname = substring(aksClusterName, 0, actualLength)
 
-resource k8s 'Microsoft.ContainerService/managedClusters@2024-01-01' = {
+resource k8s 'Microsoft.ContainerService/managedClusters@2024-06-02-preview' = {
   name: aksClusterName
   location: aksClusterLocation
   identity: {
@@ -67,5 +69,5 @@ resource k8s 'Microsoft.ContainerService/managedClusters@2024-01-01' = {
 
 
 output controlPlaneFQDN string = k8s.properties.fqdn
-output aks_oidc_issuer string = k8s.properties.identityProfile.kubeletidentity.objectId
+output aks_oidc_issuer string = k8s.properties.oidcIssuerProfile.issuerURL
 output aks_cluster_id string = k8s.id

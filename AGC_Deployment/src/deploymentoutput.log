@@ -1,0 +1,20 @@
+
+DeploymentName          : 03259c1e-6d57-4bc3-b57f-6d3fe179a4bf
+ResourceGroupName       : agc_test
+ProvisioningState       : Failed
+Timestamp               : 10/11/2024 8:37:21 PM
+Mode                    : Incremental
+TemplateLink            : 
+Parameters              : 
+                          Name                            Type                       Value     
+                          ==============================  =========================  ==========
+                          vnetName                        String                     "default" 
+                          agCname                         String                     "agc"     
+                          associationName                 String                     "agcassociation"
+                          subnet_Names                    Array                      ["aks_nodes","AGCSubnet"]
+                          dnsServers                      Array                      []        
+                          virtualNetwork_AddressPrefix    String                     "10.0.0.0/8"
+                          
+Outputs                 : 
+DeploymentDebugLogLevel : RequestContent, ResponseContent
+

@@ -103,7 +103,7 @@ resource publicIP_ApplicationGateway 'Microsoft.Network/publicIPAddresses@2022-1
   tags: tagValues
 }
 
-resource applicationGateway 'Microsoft.Network/applicationGateways@2022-11-01' = {
+resource applicationGateway 'Microsoft.Network/applicationGateways@2024-03-01' = {
   name: applicationGateway_Name
   location: location
   identity: (nossl) ? null :{
@@ -240,7 +240,41 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2022-11-01' =
     ]
     routingRules: []
     probes: []
-    rewriteRuleSets: []
+    rewriteRuleSets: [
+      {
+        name: 'rewriteRule'
+        properties: {
+          rewriteRules: [
+            {
+              actionSet: {
+                responseHeaderConfigurations: [
+                  {
+                    headerName: 'Set-Cookie'
+                    headerValue: '{capt_header_value_matcher_1}; HttpOnly; Secure'
+                    headerValueMatcher: {
+                      ignoreCase: true
+                      negate: false
+                      pattern: 'Set-Cookie'
+                    }
+
+                  }
+                ]
+              }
+              conditions: [
+                {
+                  ignoreCase: true
+                  negate: false
+                  pattern: '(cookie1=.*)'
+                  variable: 'http_resp_Set-Cookie'
+                }
+              ]
+            name: 'rewriterule'
+            ruleSequence: 10
+            }
+          ]
+        }
+      }
+    ]
     redirectConfigurations: []
     privateLinkConfigurations: []
     enableHttp2: true

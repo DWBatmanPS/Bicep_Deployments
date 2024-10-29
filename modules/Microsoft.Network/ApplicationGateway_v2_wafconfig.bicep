@@ -8,11 +8,8 @@ param publicIP_ApplicationGateway_Name string = '${applicationGateway_Name}_PIP'
 
 param applicationGateway_SubnetID string
 
-@description('Name of the Web Application Firewall of the Application Gateway')
-param applicationGatewayWAF_Name string = '${applicationGateway_Name}_WAF'
-
 @description('FQDN of the website in the backend pool of the Application Gateway')
-param backendPoolFQDNs array = []
+param backendPoolFQDNs array
 
 param certname string = 'danwheeler-rocks-wildcard' 
 
@@ -25,7 +22,7 @@ var keyVaultUrl = 'https://${keyVaultName}${keyVaultDnsSuffix}'
 param isWAF bool = false
 
 param isE2ESSL bool = false
-param backendpoolIPAddresses array = []
+
 param nossl bool = false
 
 param tagValues object = {}
@@ -38,54 +35,6 @@ var backendAddressPoolID = resourceId('Microsoft.Network/applicationGateways/bac
 var backendHTTPSettingsID = resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', applicationGateway_Name, 'http-settings')
 var backendHTTPSSettingsID = resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', applicationGateway_Name, 'https-settings')
 var location = resourceGroup().location
-var backendAddressesFromIP = [
-  for backendpoolIPAddress in backendpoolIPAddresses: {
-    ipAddress: backendpoolIPAddress
-  }
-]
-
-var backendAddressesFromFQDN = [
-  for backendPoolFQDN in backendPoolFQDNs: {
-    fqdn: backendPoolFQDN
-  }
-]
-
-var backendAddresses = (backendPoolFQDNs == []) ? backendAddressesFromIP : backendAddressesFromFQDN
-
-resource applicationGatewayWAF 'Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies@2023-11-01' = if (isWAF) {
-  name: applicationGatewayWAF_Name
-  location: location
-  properties: {
-    customRules: []
-    policySettings: {
-      requestBodyCheck: true
-      maxRequestBodySizeInKb: 128
-      fileUploadLimitInMb: 100
-      state: 'Enabled'
-      mode: 'Detection'
-      requestBodyInspectLimitInKB: 128
-      fileUploadEnforcement: true
-      requestBodyEnforcement: true
-    }
-    managedRules: {
-      managedRuleSets: [
-        {
-          ruleSetType: 'OWASP'
-          ruleSetVersion: '3.2'
-          ruleGroupOverrides: []
-        }
-        {
-          ruleSetType: 'Microsoft_BotManagerRuleSet'
-          ruleSetVersion: '0.1'
-          ruleGroupOverrides: []
-        }
-      ]
-      exclusions: []
-    }
-  }
-  tags: tagValues
-}
-
 
 resource publicIP_ApplicationGateway 'Microsoft.Network/publicIPAddresses@2022-11-01' = {
   name: publicIP_ApplicationGateway_Name
@@ -170,7 +119,10 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2022-11-01' =
       {
         name: 'backend_pool'
         properties: {
-          backendAddresses: backendAddresses
+          backendAddresses: [ for backendPoolFQDN in backendPoolFQDNs: {
+              fqdn: backendPoolFQDN
+            }
+          ]
         }
       }
     ]
@@ -248,8 +200,12 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2022-11-01' =
       minCapacity: 0
       maxCapacity: 2
     }
-    firewallPolicy: (isWAF) ?{
-      id: applicationGatewayWAF.id
+    webApplicationFirewallConfiguration: (isWAF) ?{
+      enabled: true
+      firewallMode: 'Detection'
+      requestBodyCheck: true
+      ruleSetType: 'OWASP'
+      ruleSetVersion: '3.2'
     } : null
   }
   tags: tagValues

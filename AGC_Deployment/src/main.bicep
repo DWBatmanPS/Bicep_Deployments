@@ -13,10 +13,11 @@ param AGCname string = 'agc'
 param AssociationName string = 'agcassociation'
 param subnet_Names array = [
   'aks_nodes'
-  'agc'
+  'AGCSubnet'
 ]
 param dnsServers array = []
 param virtualNetwork_AddressPrefix string = '10.0.0.0/8'
+
 
 var managedidentity_name = 'aksmanagedidentity'
 var federated_id_subject = 'system:serviceaccount:azure-alb-system:alb-controller-sa'
@@ -40,6 +41,9 @@ module agc_module '../../modules/Microsoft.ServiceNetworking/appgw_for_container
     VnetName: VnetName
     subnetNames: subnet_Names
   }
+  dependsOn: [
+    vnet_module
+  ]
 }
 
 module aks_module '../../modules/Microsoft.ContainerService/aks_cluster.bicep' = {
@@ -58,6 +62,9 @@ module aks_module '../../modules/Microsoft.ContainerService/aks_cluster.bicep' =
     aksinternalDNSIP: aksinternalDNSIP
     aksClusterSubnetname: subnet_Names[0]
   }
+  dependsOn: [
+    vnet_module
+  ]
 }
 
 module managed_identity '../../modules/Microsoft.ManagedIdentity/managed_ID_and_federation.bicep' = {
@@ -67,6 +74,9 @@ module managed_identity '../../modules/Microsoft.ManagedIdentity/managed_ID_and_
     aks_oidc_issuer: aks_module.outputs.aks_oidc_issuer
     federated_id_subject: federated_id_subject
   }
+  dependsOn: [
+    aks_module
+  ]
 }
 
 module authorizations '../../modules/Microsoft.Authorization/agc_roles.bicep' = {
@@ -77,4 +87,10 @@ module authorizations '../../modules/Microsoft.Authorization/agc_roles.bicep' = 
     vnetName: VnetName
     managedidentity_principalid: managed_identity.outputs.PrincipalID
   }
+  dependsOn: [
+    vnet_module
+    agc_module
+  ]
 }
+
+output oidc_issuer string = aks_module.outputs.aks_oidc_issuer
