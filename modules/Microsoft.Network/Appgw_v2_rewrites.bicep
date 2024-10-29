@@ -254,7 +254,7 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2024-03-01' =
                     headerValueMatcher: {
                       ignoreCase: true
                       negate: false
-                      pattern: 'Set-Cookie'
+                      pattern: '(.*)'
                     }
 
                   }
@@ -264,7 +264,7 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2024-03-01' =
                 {
                   ignoreCase: true
                   negate: false
-                  pattern: '(cookie1=.*)'
+                  pattern: '(.*)'
                   variable: 'http_resp_Set-Cookie'
                 }
               ]
