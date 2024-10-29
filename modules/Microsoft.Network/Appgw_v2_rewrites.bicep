@@ -246,6 +246,14 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2024-03-01' =
         properties: {
           rewriteRules: [
             {
+              conditions: [
+                {
+                  ignoreCase: true
+                  negate: false
+                  pattern: '(.*)'
+                  variable: 'http_resp_Set-Cookie'
+                }
+              ]
               actionSet: {
                 responseHeaderConfigurations: [
                   {
@@ -260,14 +268,6 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2024-03-01' =
                   }
                 ]
               }
-              conditions: [
-                {
-                  ignoreCase: true
-                  negate: false
-                  pattern: '(.*)'
-                  variable: 'http_resp_Set-Cookie'
-                }
-              ]
             name: 'rewriterule'
             ruleSequence: 10
             }
