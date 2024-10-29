@@ -103,7 +103,7 @@ resource publicIP_ApplicationGateway 'Microsoft.Network/publicIPAddresses@2022-1
   tags: tagValues
 }
 
-resource applicationGateway 'Microsoft.Network/applicationGateways@2024-03-01' = {
+resource applicationGateway 'Microsoft.Network/applicationGateways@2024-05-01' = {
   name: applicationGateway_Name
   location: location
   identity: (nossl) ? null :{
@@ -251,7 +251,7 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2024-03-01' =
                   ignoreCase: true
                   negate: false
                   pattern: '(.*)'
-                  variable: 'http_resp_Set-Cookie'
+                  variable: 'http_resp_set-cookie'
                 }
               ]
               actionSet: {
@@ -262,9 +262,8 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2024-03-01' =
                     headerValueMatcher: {
                       ignoreCase: true
                       negate: false
-                      pattern: '(.*)'
+                      pattern: '.*'
                     }
-
                   }
                 ]
               }
