@@ -1,0 +1,178 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-infra
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-v1
+  namespace: test-infra
+spec:
+  selector:
+    app: backend-v1
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 3000
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-v1
+  namespace: test-infra
+  labels:
+    app: backend-v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-v1
+  template:
+    metadata:
+      labels:
+        app: backend-v1
+    spec:
+      containers:
+      - name: backend-v1
+        image: gcr.io/k8s-staging-ingressconformance/echoserver:v20221109-7ee2f3e
+        lifecycle:
+          preStop:
+            exec:
+              command: ["sleep", "10"]
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        resources:
+          requests:
+            cpu: 10m
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-v2
+  namespace: test-infra
+spec:
+  selector:
+    app: backend-v2
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 3000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-v2
+  namespace: test-infra
+  labels:
+    app: backend-v2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-v2
+  template:
+    metadata:
+      labels:
+        app: backend-v2
+    spec:
+      containers:
+      - name: backend-v2
+        image: gcr.io/k8s-staging-ingressconformance/echoserver:v20221109-7ee2f3e
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        resources:
+          requests:
+            cpu: 10m
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: gateway-01
+  namespace: test-infra
+  annotations:
+    alb.networking.azure.io/alb-namespace: azure-alb-system
+    alb.networking.azure.io/alb-name: agfctestinstance
+    cert-manager.io/issuer: letsencrypt-cert
+spec:
+  gatewayClassName: azure-alb-external
+  listeners:
+  - name: http-listener
+    protocol: HTTP
+    port: 80
+    allowedRoutes:
+        namespaces:
+          from: Same
+  - name: https-listener
+    port: 443
+    protocol: HTTPS
+    tls:
+      certificateRefs:
+      - name: letsencrypt-secret
+    allowedRoutes:
+      namespaces:
+        from: Same
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+  namespace: test-infra
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory # production endpoint
+    #server: https://acme-staging-v02.api.letsencrypt.org/directory # staging endpoint
+    email: example@contoso.com
+    privateKeySecretRef:
+      name: letsencrypt-private-key
+    solvers:
+      - http01:
+          gatewayHTTPRoute:
+            parentRefs:
+              - name: gateway-01
+                namespace: test-infra
+                kind: Gateway
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: letsencrypt-cert
+  namespace: test-infra
+spec:
+  secretName: letsencrypt-secret # name published to secret store
+  issuerRef:
+    name: letsencrypt-prod # ClusterIssuer resource name
+    kind: ClusterIssuer
+  dnsNames:
+    - agc.danwheeler.rocks # domain name to be used
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: https-example
+  namespace: test-infra
+spec:
+  parentRefs:
+  - name: gateway-01
+  hostnames:
+  - "contoso.com"
+  rules:
+  - backendRefs:
+    - name: backend-v2
+      port: 8080

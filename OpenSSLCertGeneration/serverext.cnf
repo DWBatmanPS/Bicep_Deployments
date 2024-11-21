@@ -1,0 +1,9 @@
+[ req ]
+distinguished_name = req_distinguished_name
+prompt=no 
+[ req_distinguished_name ]
+countryName                 = US
+stateOrProvinceName         = WA
+localityName               = SEATTLE
+organizationName           = Contoso
+commonName                 = contoso.com

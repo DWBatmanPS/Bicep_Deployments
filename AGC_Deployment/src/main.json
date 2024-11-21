@@ -1,0 +1,853 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.29.47.4906",
+      "templateHash": "17844959033427432946"
+    }
+  },
+  "parameters": {
+    "VnetName": {
+      "type": "string",
+      "defaultValue": "default"
+    },
+    "aksClusterName": {
+      "type": "string",
+      "defaultValue": "akscluster"
+    },
+    "aksClusterNodeCount": {
+      "type": "int",
+      "defaultValue": 2
+    },
+    "aksClusterNodeSize": {
+      "type": "string",
+      "defaultValue": "Standard_D2_v2"
+    },
+    "aksClusterKubernetesVersion": {
+      "type": "string",
+      "defaultValue": "1.29"
+    },
+    "aksdnsPrefix": {
+      "type": "string",
+      "defaultValue": "danagcaksdns"
+    },
+    "linuxadmin": {
+      "type": "string",
+      "defaultValue": "danadmin"
+    },
+    "sshkey": {
+      "type": "string",
+      "defaultValue": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDSKkXzsOth/cxH5mCb/xbJY00viNN3X2GOQ7bx6lgqyLZsYaIXWfUdj37E9cN5ZFP/UOev6wuKqRscqixHh4NJ7HMRTmbx53Pu13p+iXHoSN5rULK5+y5LREUnfiqSgGBY3UhYVtBYtMKRjPFIL+8mVxze5cpH64Vt4HwL13EXd7fQtEBiaNtB6lc43mIGV/UX69qPHzPKr/GSct2S0yLQMG7sv3NizKsDajxG7E94Qn77K/euFzDT/piEN3U+4qvshMe92m07puRfIooF4xXQpA0ScDIQruKGjmomkpNwehyZbGCjUhUXWmt6sNy/04/hSp1eQEsqzMA1et3JzcvazMogtAvjRpDwAhMETesFx7GL7fN21P1fyTDIiL3W43qX9VibndrE7/Ugkyq/M2QhNvYJgSojuBElDU2uJtRhqfrFrpcy8+mBB9TD4PmKvonVvunfkQX5vr9tcctWkfKsyGSvLtUQ4bQXH3wCJJjJ579hDWS1PBuNJWEZ51GnmPZWL4QOaWZyPi+uThYhiWBCAQ7j8Iq1kTEJyHpjHGlGfXamu0EUR8Q0cIWM8TUWyILBKbdsKQ/MtP6FVJsso4BCWCrCCQEGQAnSZ9fhBw87v8zkBzW0iRblgGP+fhDFQLdqMtBMLHMwbZbXA/GbHx35K951mA1xQ4R39zFMQ+9ZoQ== danwheeler@LAPTOP-3DALUHP4"
+    },
+    "akspodcidr": {
+      "type": "string",
+      "defaultValue": "192.168.0.0/20"
+    },
+    "aksserviceCidr": {
+      "type": "string",
+      "defaultValue": "192.168.16.0/20"
+    },
+    "aksinternalDNSIP": {
+      "type": "string",
+      "defaultValue": "192.168.16.10"
+    },
+    "AGCname": {
+      "type": "string",
+      "defaultValue": "agc"
+    },
+    "AssociationName": {
+      "type": "string",
+      "defaultValue": "agcassociation"
+    },
+    "subnet_Names": {
+      "type": "array",
+      "defaultValue": [
+        "aks_nodes",
+        "AGCSubnet"
+      ]
+    },
+    "dnsServers": {
+      "type": "array",
+      "defaultValue": []
+    },
+    "virtualNetwork_AddressPrefix": {
+      "type": "string",
+      "defaultValue": "10.0.0.0/8"
+    }
+  },
+  "variables": {
+    "managedidentity_name": "aksmanagedidentity",
+    "federated_id_subject": "system:serviceaccount:azure-alb-system:alb-controller-sa"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[parameters('VnetName')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "virtualNetwork_Name": {
+            "value": "[parameters('VnetName')]"
+          },
+          "dnsServers": {
+            "value": "[parameters('dnsServers')]"
+          },
+          "virtualNetwork_AddressPrefix": {
+            "value": "[parameters('virtualNetwork_AddressPrefix')]"
+          },
+          "subnet_Names": {
+            "value": "[parameters('subnet_Names')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.29.47.4906",
+              "templateHash": "8862862987621646253"
+            }
+          },
+          "parameters": {
+            "virtualNetwork_Name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Virtual Network"
+              }
+            },
+            "dnsServers": {
+              "type": "array",
+              "defaultValue": [],
+              "metadata": {
+                "description": "An Array of Custom DNS Server IP Addresses.  Azure Wireserver will be used if left as an empty array [].\r\nExample:\r\n[10.0.0.4, 10.0.0.5]\r\n"
+              }
+            },
+            "virtualNetwork_AddressPrefix": {
+              "type": "string"
+            },
+            "tagValues": {
+              "type": "object",
+              "defaultValue": {}
+            },
+            "subnet_Names": {
+              "type": "array",
+              "defaultValue": [
+                "General",
+                "PrivateEndpoints",
+                "PrivateLinkService",
+                "ApplicationGatewaySubnet",
+                "AGCSubnet",
+                "AppServiceSubnet",
+                "GatewaySubnet",
+                "AzureFirewallSubnet",
+                "AzureFirewallManagementSubnet",
+                "AzureBastionSubnet",
+                "PrivateResolver_Inbound",
+                "PrivateResolver_Outbound"
+              ]
+            },
+            "nvaIpAddress": {
+              "type": "string",
+              "defaultValue": "10.0.0.4"
+            },
+            "deployudr": {
+              "type": "bool",
+              "defaultValue": true
+            },
+            "customsourceaddresscidr": {
+              "type": "string",
+              "defaultValue": "208.107.184.241/32"
+            }
+          },
+          "variables": {
+            "networkSecurityGroup_Default_Name": "[format('{0}_NSG_General', parameters('virtualNetwork_Name'))]",
+            "routeTable_Name": "[format('{0}_RT_General', parameters('virtualNetwork_Name'))]",
+            "location": "[resourceGroup().location]",
+            "baseAddress": "[split(parameters('virtualNetwork_AddressPrefix'), '/')[0]]",
+            "baseOctets": "[split(variables('baseAddress'), '.')]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Network/virtualNetworks",
+              "apiVersion": "2022-09-01",
+              "name": "[parameters('virtualNetwork_Name')]",
+              "location": "[variables('location')]",
+              "properties": {
+                "copy": [
+                  {
+                    "name": "subnets",
+                    "count": "[length(parameters('subnet_Names'))]",
+                    "input": {
+                      "name": "[parameters('subnet_Names')[copyIndex('subnets')]]",
+                      "properties": {
+                        "addressPrefix": "[format('{0}.{1}.{2}.0/24', variables('baseOctets')[0], variables('baseOctets')[1], copyIndex('subnets'))]",
+                        "networkSecurityGroup": "[if(and(and(and(not(equals(parameters('subnet_Names')[copyIndex('subnets')], 'AGCSubnet')), not(equals(parameters('subnet_Names')[copyIndex('subnets')], 'AzureFirewallSubnet'))), not(equals(parameters('subnet_Names')[copyIndex('subnets')], 'AzureFirewallManagementSubnet'))), not(equals(parameters('subnet_Names')[copyIndex('subnets')], 'GatewaySubnet'))), createObject('id', resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroup_Default_Name'))), null())]",
+                        "routeTable": "[if(and(parameters('deployudr'), and(and(and(not(equals(parameters('subnet_Names')[copyIndex('subnets')], 'AzureFirewallSubnet')), not(equals(parameters('subnet_Names')[copyIndex('subnets')], 'AzureFirewallManagementSubnet'))), not(equals(parameters('subnet_Names')[copyIndex('subnets')], 'GatewaySubnet'))), not(equals(parameters('subnet_Names')[copyIndex('subnets')], 'AGCSubnet')))), createObject('id', resourceId('Microsoft.Network/routeTables', variables('routeTable_Name'))), null())]",
+                        "delegations": "[if(equals(parameters('subnet_Names')[copyIndex('subnets')], 'AGCSubnet'), createArray(createObject('name', 'Microsoft.ServiceNetworking/trafficControllers', 'properties', createObject('serviceName', 'Microsoft.ServiceNetworking/trafficControllers'))), null())]"
+                      }
+                    }
+                  }
+                ],
+                "dhcpOptions": {
+                  "dnsServers": "[parameters('dnsServers')]"
+                },
+                "addressSpace": {
+                  "addressPrefixes": [
+                    "[parameters('virtualNetwork_AddressPrefix')]"
+                  ]
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroup_Default_Name'))]",
+                "[resourceId('Microsoft.Network/routeTables', variables('routeTable_Name'))]"
+              ]
+            },
+            {
+              "condition": "[parameters('deployudr')]",
+              "type": "Microsoft.Network/routeTables",
+              "apiVersion": "2023-02-01",
+              "name": "[variables('routeTable_Name')]",
+              "location": "[variables('location')]",
+              "properties": {
+                "disableBgpRoutePropagation": false,
+                "routes": [
+                  {
+                    "id": "[resourceId('Microsoft.Network/routeTables/routes', variables('routeTable_Name'), 'VirtualNetworkRoute')]",
+                    "name": "VirtualNetworkRoute",
+                    "properties": {
+                      "addressPrefix": "[parameters('virtualNetwork_AddressPrefix')]",
+                      "nextHopType": "VirtualAppliance",
+                      "nextHopIpAddress": "[parameters('nvaIpAddress')]"
+                    }
+                  }
+                ]
+              },
+              "tags": "[parameters('tagValues')]"
+            },
+            {
+              "type": "Microsoft.Network/networkSecurityGroups",
+              "apiVersion": "2022-09-01",
+              "name": "[variables('networkSecurityGroup_Default_Name')]",
+              "location": "[variables('location')]",
+              "properties": {
+                "securityRules": [
+                  {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups/securityRules', variables('networkSecurityGroup_Default_Name'), 'AllowCustomInbound')]",
+                    "name": "AllowCustomInbound",
+                    "properties": {
+                      "description": "Allow Custom Inbound",
+                      "protocol": "*",
+                      "sourcePortRange": "*",
+                      "sourceAddressPrefix": "[parameters('customsourceaddresscidr')]",
+                      "destinationAddressPrefix": "VirtualNetwork",
+                      "access": "Allow",
+                      "priority": 100,
+                      "direction": "Inbound",
+                      "destinationPortRanges": [
+                        "22",
+                        "3389"
+                      ]
+                    }
+                  },
+                  {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups/securityRules', variables('networkSecurityGroup_Default_Name'), 'Allow443inbound')]",
+                    "name": "Allow443inbound",
+                    "properties": {
+                      "description": "Allow 443 inbound",
+                      "protocol": "Tcp",
+                      "sourcePortRange": "*",
+                      "sourceAddressPrefix": "Internet",
+                      "destinationAddressPrefix": "VirtualNetwork",
+                      "access": "Allow",
+                      "priority": 102,
+                      "direction": "Inbound",
+                      "destinationPortRanges": [
+                        "443"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "AllowGatewayManager",
+                    "properties": {
+                      "description": "Allow GatewayManager",
+                      "protocol": "*",
+                      "sourcePortRange": "*",
+                      "destinationPortRange": "65200-65535",
+                      "sourceAddressPrefix": "GatewayManager",
+                      "destinationAddressPrefix": "*",
+                      "access": "Allow",
+                      "priority": 1003,
+                      "direction": "Inbound",
+                      "sourcePortRanges": [],
+                      "destinationPortRanges": [],
+                      "sourceAddressPrefixes": [],
+                      "destinationAddressPrefixes": []
+                    }
+                  }
+                ]
+              },
+              "tags": "[parameters('tagValues')]"
+            },
+            {
+              "type": "Microsoft.Network/networkSecurityGroups",
+              "apiVersion": "2022-11-01",
+              "name": "[format('{0}_NSG_ApplicationGateway', parameters('virtualNetwork_Name'))]",
+              "location": "[variables('location')]",
+              "properties": {
+                "securityRules": [
+                  {
+                    "name": "AllowGatewayManager",
+                    "properties": {
+                      "description": "Allow GatewayManager",
+                      "protocol": "*",
+                      "sourcePortRange": "*",
+                      "destinationPortRange": "65200-65535",
+                      "sourceAddressPrefix": "GatewayManager",
+                      "destinationAddressPrefix": "*",
+                      "access": "Allow",
+                      "priority": 1000,
+                      "direction": "Inbound",
+                      "sourcePortRanges": [],
+                      "destinationPortRanges": [],
+                      "sourceAddressPrefixes": [],
+                      "destinationAddressPrefixes": []
+                    }
+                  },
+                  {
+                    "name": "AllowHTTPS",
+                    "properties": {
+                      "description": "Allow HTTPS",
+                      "protocol": "Tcp",
+                      "sourcePortRange": "*",
+                      "destinationPortRange": "443",
+                      "sourceAddressPrefix": "*",
+                      "destinationAddressPrefix": "*",
+                      "access": "Allow",
+                      "priority": 1001,
+                      "direction": "Inbound",
+                      "sourcePortRanges": [],
+                      "destinationPortRanges": [],
+                      "sourceAddressPrefixes": [],
+                      "destinationAddressPrefixes": []
+                    }
+                  }
+                ]
+              },
+              "tags": "[parameters('tagValues')]"
+            }
+          ],
+          "outputs": {
+            "virtualNetwork_Name": {
+              "type": "string",
+              "value": "[parameters('virtualNetwork_Name')]"
+            },
+            "virtualNetwork_ID": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetwork_Name'))]"
+            },
+            "virtualNetwork_AddressPrefix": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetwork_Name')), '2022-09-01').addressSpace.addressPrefixes[0]]"
+            },
+            "routeTable_Name": {
+              "type": "string",
+              "value": "[variables('routeTable_Name')]"
+            },
+            "routeTable_ID": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Network/routeTables', variables('routeTable_Name'))]"
+            },
+            "networkSecurityGroup_Name": {
+              "type": "string",
+              "value": "[variables('networkSecurityGroup_Default_Name')]"
+            },
+            "networkSecurityGroup_ID": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroup_Default_Name'))]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[parameters('AGCname')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "FrontendName": {
+            "value": "agcFrontend"
+          },
+          "AGCname": {
+            "value": "[parameters('AGCname')]"
+          },
+          "AssociationName": {
+            "value": "[parameters('AssociationName')]"
+          },
+          "VnetName": {
+            "value": "[parameters('VnetName')]"
+          },
+          "subnetNames": {
+            "value": "[parameters('subnet_Names')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.29.47.4906",
+              "templateHash": "10737134049171067166"
+            }
+          },
+          "parameters": {
+            "AGCname": {
+              "type": "string",
+              "defaultValue": "AGCName"
+            },
+            "FrontendName": {
+              "type": "string",
+              "defaultValue": "Frontend"
+            },
+            "AssociationName": {
+              "type": "string",
+              "defaultValue": "Association"
+            },
+            "VnetName": {
+              "type": "string",
+              "defaultValue": "vnet"
+            },
+            "subnetNames": {
+              "type": "array",
+              "defaultValue": []
+            },
+            "resourcetags": {
+              "type": "object",
+              "defaultValue": {}
+            },
+            "targetSubnetName": {
+              "type": "string",
+              "defaultValue": "AGCSubnet"
+            }
+          },
+          "variables": {
+            "DeploymentLocation": "[resourceGroup().location]",
+            "targetSubnetExists": "[contains(parameters('subnetNames'), parameters('targetSubnetName'))]",
+            "selectedSubnetName": "[if(variables('targetSubnetExists'), parameters('targetSubnetName'), 'AGCSubnet')]",
+            "selectedSubnetID": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('VnetName'), variables('selectedSubnetName'))]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.ServiceNetworking/trafficControllers",
+              "apiVersion": "2023-11-01",
+              "name": "[parameters('AGCname')]",
+              "location": "[variables('DeploymentLocation')]",
+              "tags": "[parameters('resourcetags')]"
+            },
+            {
+              "type": "Microsoft.ServiceNetworking/trafficControllers/frontends",
+              "apiVersion": "2023-11-01",
+              "name": "[format('{0}/{1}', parameters('AGCname'), parameters('FrontendName'))]",
+              "location": "[variables('DeploymentLocation')]",
+              "properties": {},
+              "dependsOn": [
+                "[resourceId('Microsoft.ServiceNetworking/trafficControllers', parameters('AGCname'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.ServiceNetworking/trafficControllers/associations",
+              "apiVersion": "2023-11-01",
+              "name": "[format('{0}/{1}', parameters('AGCname'), format('{0}-{1}', parameters('AssociationName'), variables('selectedSubnetName')))]",
+              "location": "[variables('DeploymentLocation')]",
+              "properties": {
+                "associationType": "subnets",
+                "subnet": {
+                  "id": "[variables('selectedSubnetID')]"
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ServiceNetworking/trafficControllers', parameters('AGCname'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "AGC_ID": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.ServiceNetworking/trafficControllers', parameters('AGCname'))]"
+            },
+            "AGC_Frontend_ID": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.ServiceNetworking/trafficControllers/frontends', parameters('AGCname'), parameters('FrontendName')), '2023-11-01').fqdn]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', parameters('VnetName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "aks_deployment",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "aksClusterName": {
+            "value": "[parameters('aksClusterName')]"
+          },
+          "aksClusterNodeCount": {
+            "value": "[parameters('aksClusterNodeCount')]"
+          },
+          "aksClusterNodeSize": {
+            "value": "[parameters('aksClusterNodeSize')]"
+          },
+          "aksClusterKubernetesVersion": {
+            "value": "[parameters('aksClusterKubernetesVersion')]"
+          },
+          "VnetName": {
+            "value": "[parameters('VnetName')]"
+          },
+          "aksdnsPrefix": {
+            "value": "[parameters('aksdnsPrefix')]"
+          },
+          "linuxadmin": {
+            "value": "[parameters('linuxadmin')]"
+          },
+          "sshkey": {
+            "value": "[parameters('sshkey')]"
+          },
+          "akspodCidr": {
+            "value": "[parameters('akspodcidr')]"
+          },
+          "aksserviceCidr": {
+            "value": "[parameters('aksserviceCidr')]"
+          },
+          "aksinternalDNSIP": {
+            "value": "[parameters('aksinternalDNSIP')]"
+          },
+          "aksClusterSubnetname": {
+            "value": "[parameters('subnet_Names')[0]]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.29.47.4906",
+              "templateHash": "6697183927085067583"
+            }
+          },
+          "parameters": {
+            "aksClusterName": {
+              "type": "string"
+            },
+            "aksClusterNodeCount": {
+              "type": "int"
+            },
+            "aksClusterNodeSize": {
+              "type": "string"
+            },
+            "aksClusterKubernetesVersion": {
+              "type": "string"
+            },
+            "VnetName": {
+              "type": "string"
+            },
+            "aksClusterSubnetname": {
+              "type": "string"
+            },
+            "aksdnsPrefix": {
+              "type": "string"
+            },
+            "sshkey": {
+              "type": "string"
+            },
+            "akspodCidr": {
+              "type": "string"
+            },
+            "aksserviceCidr": {
+              "type": "string"
+            },
+            "aksinternalDNSIP": {
+              "type": "string"
+            },
+            "linuxadmin": {
+              "type": "string",
+              "defaultValue": "AKSAdmin"
+            }
+          },
+          "variables": {
+            "substringLength": 10,
+            "actualLength": "[if(less(length(parameters('aksClusterName')), variables('substringLength')), length(parameters('aksClusterName')), variables('substringLength'))]",
+            "aksClusterLocation": "[resourceGroup().location]",
+            "aksClusterSubnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('VnetName'), parameters('aksClusterSubnetname'))]",
+            "truncatedagentpoolname": "[substring(parameters('aksClusterName'), 0, variables('actualLength'))]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.ContainerService/managedClusters",
+              "apiVersion": "2024-06-02-preview",
+              "name": "[parameters('aksClusterName')]",
+              "location": "[variables('aksClusterLocation')]",
+              "identity": {
+                "type": "SystemAssigned"
+              },
+              "properties": {
+                "dnsPrefix": "[parameters('aksdnsPrefix')]",
+                "kubernetesVersion": "[parameters('aksClusterKubernetesVersion')]",
+                "agentPoolProfiles": [
+                  {
+                    "name": "[variables('truncatedagentpoolname')]",
+                    "count": "[parameters('aksClusterNodeCount')]",
+                    "vmSize": "[parameters('aksClusterNodeSize')]",
+                    "vnetSubnetID": "[variables('aksClusterSubnetId')]",
+                    "osType": "Linux",
+                    "mode": "System"
+                  }
+                ],
+                "linuxProfile": {
+                  "adminUsername": "[parameters('linuxadmin')]",
+                  "ssh": {
+                    "publicKeys": [
+                      {
+                        "keyData": "[parameters('sshkey')]"
+                      }
+                    ]
+                  }
+                },
+                "networkProfile": {
+                  "loadBalancerSku": "standard",
+                  "networkPlugin": "azure",
+                  "networkPolicy": "azure",
+                  "outboundType": "loadBalancer",
+                  "podCidr": "[parameters('akspodCidr')]",
+                  "serviceCidr": "[parameters('aksserviceCidr')]",
+                  "dnsServiceIP": "[parameters('aksinternalDNSIP')]"
+                },
+                "oidcIssuerProfile": {
+                  "enabled": true
+                },
+                "securityProfile": {
+                  "workloadIdentity": {
+                    "enabled": true
+                  }
+                }
+              }
+            }
+          ],
+          "outputs": {
+            "controlPlaneFQDN": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.ContainerService/managedClusters', parameters('aksClusterName')), '2024-06-02-preview').fqdn]"
+            },
+            "aks_oidc_issuer": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.ContainerService/managedClusters', parameters('aksClusterName')), '2024-06-02-preview').oidcIssuerProfile.issuerURL]"
+            },
+            "aks_cluster_id": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.ContainerService/managedClusters', parameters('aksClusterName'))]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', parameters('VnetName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "managed_identity_deployment",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "managedidentity_name": {
+            "value": "[variables('managedidentity_name')]"
+          },
+          "aks_oidc_issuer": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'aks_deployment'), '2022-09-01').outputs.aks_oidc_issuer.value]"
+          },
+          "federated_id_subject": {
+            "value": "[variables('federated_id_subject')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.29.47.4906",
+              "templateHash": "9694395319807098924"
+            }
+          },
+          "parameters": {
+            "managedidentity_name": {
+              "type": "string"
+            },
+            "aks_oidc_issuer": {
+              "type": "string"
+            },
+            "federated_id_subject": {
+              "type": "string"
+            }
+          },
+          "variables": {
+            "DeploymentLocation": "[resourceGroup().location]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+              "apiVersion": "2023-01-31",
+              "name": "[parameters('managedidentity_name')]",
+              "location": "[variables('DeploymentLocation')]"
+            },
+            {
+              "type": "Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials",
+              "apiVersion": "2023-01-31",
+              "name": "[format('{0}/{1}', parameters('managedidentity_name'), format('{0}-federation', parameters('managedidentity_name')))]",
+              "properties": {
+                "audiences": [
+                  "[environment().suffixes.acrLoginServer]"
+                ],
+                "issuer": "[parameters('aks_oidc_issuer')]",
+                "subject": "[parameters('federated_id_subject')]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('managedidentity_name'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "clientID": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('managedidentity_name')), '2023-01-31').clientId]"
+            },
+            "PrincipalID": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('managedidentity_name')), '2023-01-31').principalId]"
+            },
+            "ManagedID_Federation": {
+              "type": "string",
+              "value": "[format('{0}-federation', parameters('managedidentity_name'))]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'aks_deployment')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "agc_roles",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "managedidentity_name": {
+            "value": "[variables('managedidentity_name')]"
+          },
+          "agcSubnetname": {
+            "value": "[parameters('subnet_Names')[1]]"
+          },
+          "vnetName": {
+            "value": "[parameters('VnetName')]"
+          },
+          "managedidentity_principalid": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'managed_identity_deployment'), '2022-09-01').outputs.PrincipalID.value]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.29.47.4906",
+              "templateHash": "7332147641982760772"
+            }
+          },
+          "parameters": {
+            "managedidentity_name": {
+              "type": "string"
+            },
+            "agcSubnetname": {
+              "type": "string"
+            },
+            "vnetName": {
+              "type": "string"
+            },
+            "managedidentity_principalid": {
+              "type": "string"
+            }
+          },
+          "variables": {
+            "agcSubnetId": "[resourceId(resourceGroup().name, 'Microsoft.Network/virtualNetworks', parameters('vnetName'), 'subnets', parameters('agcSubnetname'))]",
+            "agc_role": "fbc52c3f-28ad-4303-a892-8a056630b8f1",
+            "netcontrib_role": "4d97b98b-1d4f-4787-a291-c67834d212e7"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2020-04-01-preview",
+              "name": "[guid(parameters('managedidentity_name'), variables('agc_role'))]",
+              "properties": {
+                "principalId": "[parameters('managedidentity_principalid')]",
+                "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', variables('agc_role'))]",
+                "principalType": "ServicePrincipal"
+              }
+            },
+            {
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2020-04-01-preview",
+              "scope": "[format('Microsoft.Network/virtualNetworks/{0}/subnets/{1}', split(variables('agcSubnetId'), '/')[0], split(variables('agcSubnetId'), '/')[1])]",
+              "name": "[guid(parameters('managedidentity_name'), variables('netcontrib_role'))]",
+              "properties": {
+                "principalId": "[parameters('managedidentity_principalid')]",
+                "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', variables('netcontrib_role'))]",
+                "principalType": "ServicePrincipal"
+              }
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', parameters('AGCname'))]",
+        "[resourceId('Microsoft.Resources/deployments', 'managed_identity_deployment')]",
+        "[resourceId('Microsoft.Resources/deployments', parameters('VnetName'))]"
+      ]
+    }
+  ],
+  "outputs": {
+    "oidc_issuer": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'aks_deployment'), '2022-09-01').outputs.aks_oidc_issuer.value]"
+    }
+  }
+}

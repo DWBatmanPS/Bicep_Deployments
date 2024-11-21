@@ -1,0 +1,158 @@
+# Prerequisites
+*.d
+
+# Object files
+*.o
+*.ko
+*.obj
+*.elf
+
+# Linker output
+*.ilk
+*.map
+*.exp
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Kernel Module Compile Results
+*.mod*
+*.cmd
+.tmp_versions/
+modules.order
+Module.symvers
+Mkfile.old
+dkms.conf
+
+#Ignore Backups
+AzureNetworkingLabs.zip
+AzureNetworkingLabs2.zip
+
+# Security Keys
+*.key
+*.csr
+*.cer
+*.crt
+*.pem
+*.p12
+*.pfx
+*.gpg
+*.jks
+*.pub
+*.priv
+*.der
+*.p7b
+*.p7r
+*.spc
+*.srl
+
+#Compresed
+*.zip
+*.7z
+*.rar
+*.gz
+*.tar
+*.tgz
+*.bzip
+*.bzip2
+*.bz2
+*.xz
+*.lzma
+*.cab
+*.iso
+*.dmg
+*.jar
+*.war
+*.ear
+*.sar
+*.apk
+*.tar.gz
+*.tar.xz
+*.tar.bz2
+*.tar.lzma
+*.tar.Z
+*.tar.Z
+*.tar.zst
+*.tar.zstd
+*.tar.zstd
+*.tar.lzo
+*.tar.lz
+*.tar.lz4
+*.tar.lzop
+*.tar.lzma
+*.tar.xz
+*.tar.zst
+*.tar.zstd
+*.tar.zstd
+*.tar.zstd
+*.tar.lzo
+*.tar.lz
+*.tar.lz4
+*.tar.lzop
+*.tar.lzma
+*.tar.xz
+*.tar.zst
+*.tar.zstd
+*.tar.zstd
+*.tar.zstd
+*.tar.lzo
+*.tar.lz
+*.tar.lz4
+*.tar.lzop
+*.tar.lzma
+*.tar.xz
+*.tar.zst
+*.tar.zstd
+*.tar.zstd
+*.tar.zstd
+*.tar.lzo
+*.tar.lz
+*.tar.lz4
+*.tar.lzop
+
+
+
+#Bicep Parameter files
+*.bicepparam
+
+# Scratch files
+scratch.azcli
+scratch.bicep
+scratch.ps1
+scratch.sh
+scratch.txt
+scratch.json
+scratch.bicepparam
+scratch.zip
+<<<<<<< HEAD
+scratch.7z
+=======
+scratch.7z
+>>>>>>> b147bc3e654fe08c412fa90120abe1fab7a500e3

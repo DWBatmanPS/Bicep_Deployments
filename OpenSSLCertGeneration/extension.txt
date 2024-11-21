@@ -1,0 +1,2 @@
+subjectAltName         = DNS:largecert.danwheeler.rocks
+extendedKeyUsage = serverAuth, clientAuth

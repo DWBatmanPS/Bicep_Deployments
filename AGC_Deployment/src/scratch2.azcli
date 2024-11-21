@@ -1,0 +1,64 @@
+az aks get-credentials --resource-group AGC-managedingress --name agcaks --overwrite-existing
+
+
+$HELM_NAMESPACE='default'
+$CONTROLLER_NAMESPACE='azure-alb-system'
+az aks get-credentials --resource-group AGC-managedingress --name agcaks
+helm upgrade alb-controller oci://mcr.microsoft.com/application-lb/charts/alb-controller --namespace $HELM_NAMESPACE --version 1.2.3 --set albController.namespace=$CONTROLLER_NAMESPACE --set albController.podIdentity.clientID=$(az identity show -g AGC-managedingress -n aksmanagedidentity --query clientId -o tsv)
+
+helm update 
+
+kubectl apply -f managed-config.yaml
+
+helm repo add jetstack https://charts.jetstack.io --force-update
+helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.16.0 --set config.enableGatewayAPI=true --set crds.enabled=true
+
+
+
+  apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: https-example
+  namespace: test-infra
+spec:
+  parentRefs:
+  - name: gateway-01
+  hostnames:
+  - "agc.danwheeler.rocks"
+  rules:
+  - backendRefs:
+    - name: echo
+      port: 80
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: letsencrypt-cert
+  namespace: test-infra
+spec:
+  secretName: letsencrypt-secret # name published to secret store
+  issuerRef:
+    name: letsencrypt-prod # ClusterIssuer resource name
+    kind: ClusterIssuer
+  dnsNames:
+    - agc.danwheeler.rocks
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+  namespace: test-infra
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory # production endpoint
+    #server: https://acme-staging-v02.api.letsencrypt.org/directory # staging endpoint
+    email: danwheeler@microsoft.com
+    privateKeySecretRef:
+      name: letsencrypt-private-key
+    solvers:
+      - http01:
+          gatewayHTTPRoute:
+            parentRefs:
+              - name: gateway-01
+                namespace: test-infra
+                kind: Gateway
