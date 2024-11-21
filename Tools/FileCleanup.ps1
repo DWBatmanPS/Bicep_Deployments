@@ -33,6 +33,6 @@ function Update-Files {
     }
 }
 
-
+$parentDirectoryfull = "Lab_Deployments\$parentDirectory"
 # Process files in the parent directory and its subdirectories
-Update-Files -directory $parentDirectory
+Update-Files -directory $parentDirectoryfull
