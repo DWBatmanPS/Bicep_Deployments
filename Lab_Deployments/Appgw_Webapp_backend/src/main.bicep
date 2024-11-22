@@ -21,7 +21,7 @@ param keyVaultName string = ''
 @description('The name of the App Service application to create. This must be globally unique.')
 var appName = 'DW-${uniqueString(resourceGroup().id)}'
 
-module virtualNetwork '../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
+module virtualNetwork '../../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
   name: virtualNetworkName
   params: {
     virtualNetwork_Name: virtualNetworkName
@@ -31,7 +31,7 @@ module virtualNetwork '../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
   }
 }
 
-module appgw '../../modules/Microsoft.Network/ApplicationGateway_v2.bicep' = {
+module appgw '../../../modules/Microsoft.Network/ApplicationGateway_v2.bicep' = {
   name: applicationGateWayName
   params: {
     applicationGateway_Name: applicationGateWayName
@@ -48,7 +48,7 @@ module appgw '../../modules/Microsoft.Network/ApplicationGateway_v2.bicep' = {
   }
 }
 
-module Webapp '../../modules/Microsoft.Web/site.bicep' = {
+module Webapp '../../../modules/Microsoft.Web/site.bicep' = {
   name: 'Webapp'
   params: {
     site_Name: appName

@@ -19,7 +19,7 @@ param publicIP_ApplicationGateway_Name string = 'agic-appgwip'
 //param serviceprincipal_client_Id string
 
 
-module AKSCluster '../../modules/Microsoft.ContainerService/aks_cluster.bicep' = {
+module AKSCluster '../../../modules/Microsoft.ContainerService/aks_cluster.bicep' = {
   name: 'aks_deployment'
   params: {
     aksClusterName: aksClusterName
@@ -37,7 +37,7 @@ module AKSCluster '../../modules/Microsoft.ContainerService/aks_cluster.bicep' =
   }
 }
 
-module Vnet '../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
+module Vnet '../../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
   name: VnetName
   params: {
     virtualNetwork_Name: VnetName
@@ -46,7 +46,7 @@ module Vnet '../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
   }
 }
 
-module AppGateway '../../modules/Microsoft.Network/ApplicationGateway_v2.bicep' = {
+module AppGateway '../../../modules/Microsoft.Network/ApplicationGateway_v2.bicep' = {
   name: 'appgateway_deployment'
   params: {
     applicationGateway_SubnetID: resourceId('Microsoft.Network/virtualNetworks/subnets', VnetName, subnet_Names[1])
@@ -57,7 +57,7 @@ module AppGateway '../../modules/Microsoft.Network/ApplicationGateway_v2.bicep' 
   }
 }
 
-/*  module authorization '../../modules/Microsoft.Authorization/agic_role.bicep' = {
+/*  module authorization '../../../modules/Microsoft.Authorization/agic_role.bicep' = {
   name: 'agic_role'
   params: {
     serviceprincipal_client_Id: serviceprincipal_client_Id 

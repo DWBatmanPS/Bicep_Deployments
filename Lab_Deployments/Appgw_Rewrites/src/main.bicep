@@ -18,7 +18,7 @@ param VMSubnetName string = 'VMSubnet'
 
 param keyVaultName string = 'DanWheelerVaultStr'
 
-module virtualNetwork '../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
+module virtualNetwork '../../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
   name: virtualNetworkName
   params: {
     virtualNetwork_Name: virtualNetworkName
@@ -28,7 +28,7 @@ module virtualNetwork '../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
   }
 }
 
-module appgw '../../modules/Microsoft.Network/Appgw_v2_rewrites.bicep' = {
+module appgw '../../../modules/Microsoft.Network/Appgw_v2_rewrites.bicep' = {
   name: applicationGateWayName
   params: {
     applicationGateway_Name: applicationGateWayName
@@ -50,7 +50,7 @@ module appgw '../../modules/Microsoft.Network/Appgw_v2_rewrites.bicep' = {
   ]
 }
 
-module VM '../../modules/Microsoft.Compute/WindowsServer2022/VirtualMachine.bicep' = {
+module VM '../../../modules/Microsoft.Compute/WindowsServer2022/VirtualMachine.bicep' = {
   name: 'VM'
   params: {
     acceleratedNetworking: true

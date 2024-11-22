@@ -19,7 +19,7 @@ resource Keyvault_ManagedID 'Microsoft.ManagedIdentity/userAssignedIdentities@20
   }
 }
 
-module keyvault '../../modules/Microsoft.Keyvault/keyvault_with_managedID.bicep' = {
+module keyvault '../../../modules/Microsoft.Keyvault/keyvault_with_managedID.bicep' = {
   name: 'keyvault'
   params: {
     keyVaultName: KeyVaultName
@@ -30,7 +30,7 @@ module keyvault '../../modules/Microsoft.Keyvault/keyvault_with_managedID.bicep'
   }
 }
 
-module automation_account '../../modules/Microsoft.Automation/Automation_account.bicep' = {
+module automation_account '../../../modules/Microsoft.Automation/Automation_account.bicep' = {
   name: 'automation_account'
   params: {
     automationaccount: 'labdeployment-automation'
@@ -39,7 +39,7 @@ module automation_account '../../modules/Microsoft.Automation/Automation_account
   }
 }
 
-module automation_contrib_role '../../modules/Microsoft.Authorization/subscription_contributor_role.bicep' = {
+module automation_contrib_role '../../../modules/Microsoft.Authorization/subscription_contributor_role.bicep' = {
   name: 'automation_contrib_role'
   scope: subscription()
   params: {

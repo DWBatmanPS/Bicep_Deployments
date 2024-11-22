@@ -34,7 +34,7 @@ var azfwsubnetid = resourceId('Microsoft.Network/virtualNetworks/subnets', virtu
 //]
 
 
-module virtualNetwork '../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
+module virtualNetwork '../../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
   name: virtualNetworkName
   params: {
     virtualNetwork_Name: virtualNetworkName
@@ -47,7 +47,7 @@ module virtualNetwork '../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
   }
 }
  
-module appgw '../../modules/Microsoft.Network/ApplicationGateway_v2.bicep' = {
+module appgw '../../../modules/Microsoft.Network/ApplicationGateway_v2.bicep' = {
   name: applicationGateWayName
   params: {
     applicationGateway_Name: applicationGateWayName
@@ -65,7 +65,7 @@ module appgw '../../modules/Microsoft.Network/ApplicationGateway_v2.bicep' = {
   ]
 }
 
-module azfwpolicy '../..//modules/Microsoft.Network/AZFWPolicy.bicep' = {
+module azfwpolicy '../../../modules/Microsoft.Network/AZFWPolicy.bicep' = {
   name: policyname
   params: {
     policyname: policyname
@@ -75,7 +75,7 @@ module azfwpolicy '../..//modules/Microsoft.Network/AZFWPolicy.bicep' = {
   }
 }
 
-module azfwdeploy '../../modules/Microsoft.Network/AzureFirewall.bicep' = {
+module azfwdeploy '../../../modules/Microsoft.Network/AzureFirewall.bicep' = {
   name: azfw
   params: {
     azureFirewall_Name: azfw
@@ -90,7 +90,7 @@ module azfwdeploy '../../modules/Microsoft.Network/AzureFirewall.bicep' = {
   ]
 }
 
-module vm '../../modules/Microsoft.Compute/WindowsServer2022/VirtualMachine.bicep' = {
+module vm '../../../modules/Microsoft.Compute/WindowsServer2022/VirtualMachine.bicep' = {
   name: 'dwwebapp'
   params: {
     virtualMachine_Name: 'dwwebapp'

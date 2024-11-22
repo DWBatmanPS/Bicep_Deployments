@@ -50,7 +50,7 @@ var endpointnamearray = [for i in range(0, arrayLength) : {
 var externalEndpointNames = [for entry in endpointnamearray: entry.value]
 targetScope = 'subscription'
 
-module rg1_deployment '../../modules/Microsoft.Resources/Resource_Group.bicep' = {
+module rg1_deployment '../../../modules/Microsoft.Resources/Resource_Group.bicep' = {
   name: 'Resource_Group'
   params: {
     RGName: RGName1
@@ -58,7 +58,7 @@ module rg1_deployment '../../modules/Microsoft.Resources/Resource_Group.bicep' =
   }
 }
 
-module rg2_deployment '../../modules/Microsoft.Resources/Resource_Group.bicep' = {
+module rg2_deployment '../../../modules/Microsoft.Resources/Resource_Group.bicep' = {
   name: 'Resource_Group2'
   params: {
     RGName: RGName2
@@ -66,7 +66,7 @@ module rg2_deployment '../../modules/Microsoft.Resources/Resource_Group.bicep' =
   }
 }
 
-module atm '../../modules/Microsoft.Network/ATM_Deployment.bicep' = {
+module atm '../../../modules/Microsoft.Network/ATM_Deployment.bicep' = {
   name: 'ATM_Deployment'
   scope: resourceGroup(RGName1)
   params: {
@@ -81,14 +81,14 @@ module atm '../../modules/Microsoft.Network/ATM_Deployment.bicep' = {
   }
 }
 
-module appserviceplan1_deployment '../../modules/Microsoft.Web/appserviceplan.bicep' = {
+module appserviceplan1_deployment '../../../modules/Microsoft.Web/appserviceplan.bicep' = {
   name: appserviceplan1
   scope: resourceGroup(RGName1)
   params: {
     appServicePlan_Name: appserviceplan1
   }
 }
-module webapp1_deployment '../../modules/Microsoft.Web/site_only.bicep' = {
+module webapp1_deployment '../../../modules/Microsoft.Web/site_only.bicep' = {
   name: webapp1
   scope: resourceGroup(RGName1)
   params: {
@@ -97,7 +97,7 @@ module webapp1_deployment '../../modules/Microsoft.Web/site_only.bicep' = {
   }
 }
 
-module webapp2_deployment '../../modules/Microsoft.Web/site_only.bicep' = {
+module webapp2_deployment '../../../modules/Microsoft.Web/site_only.bicep' = {
   name: webapp2
   scope: resourceGroup(RGName1)
   params: {

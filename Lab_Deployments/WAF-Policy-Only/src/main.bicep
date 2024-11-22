@@ -19,7 +19,7 @@ param matchVariables array = []
 param tagValues object = {}
 
 
-module wafPolicy '../../modules/Microsoft.Network/appgw_Waf_policy.bicep' = {
+module wafPolicy '../../../modules/Microsoft.Network/appgw_Waf_policy.bicep' = {
   name: 'wafPolicy'
   params: {
     applicationGatewayWAF_Name:applicationGatewayWAF_Name

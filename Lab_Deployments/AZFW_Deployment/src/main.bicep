@@ -13,7 +13,7 @@ param subnet_Names array = [
 
 var azfwsubnetid = resourceId(resourceGroup().name, 'Microsoft.Network/virtualNetworks', VnetName, 'subnets', 'AzureFirewallSubnet')
 
-module vnet '../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
+module vnet '../../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
   name: VnetName
   params: {
     virtualNetwork_Name: VnetName
@@ -23,7 +23,7 @@ module vnet '../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
   }
 }
 
-module azfwpolicy '../..//modules/Microsoft.Network/AZFWPolicy.bicep' = {
+module azfwpolicy '../../..//modules/Microsoft.Network/AZFWPolicy.bicep' = {
   name: policyname
   params: {
     policyname: policyname
@@ -33,7 +33,7 @@ module azfwpolicy '../..//modules/Microsoft.Network/AZFWPolicy.bicep' = {
   }
 }
 
-module azfwdeploy '../../modules/Microsoft.Network/AzureFirewall.bicep' = {
+module azfwdeploy '../../../modules/Microsoft.Network/AzureFirewall.bicep' = {
   name: azfw
   params: {
     azureFirewall_Name: azfw

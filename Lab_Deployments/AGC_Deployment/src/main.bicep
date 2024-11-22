@@ -2,10 +2,10 @@ param VnetName string = 'default'
 param aksClusterName string = 'akscluster'
 param aksClusterNodeCount int = 2
 param aksClusterNodeSize string = 'Standard_D2_v2'
-param aksClusterKubernetesVersion string = '1.29'
-param aksdnsPrefix string = 'danagcaksdns'
-param linuxadmin string = 'danadmin'
-param sshkey string = 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDSKkXzsOth/cxH5mCb/xbJY00viNN3X2GOQ7bx6lgqyLZsYaIXWfUdj37E9cN5ZFP/UOev6wuKqRscqixHh4NJ7HMRTmbx53Pu13p+iXHoSN5rULK5+y5LREUnfiqSgGBY3UhYVtBYtMKRjPFIL+8mVxze5cpH64Vt4HwL13EXd7fQtEBiaNtB6lc43mIGV/UX69qPHzPKr/GSct2S0yLQMG7sv3NizKsDajxG7E94Qn77K/euFzDT/piEN3U+4qvshMe92m07puRfIooF4xXQpA0ScDIQruKGjmomkpNwehyZbGCjUhUXWmt6sNy/04/hSp1eQEsqzMA1et3JzcvazMogtAvjRpDwAhMETesFx7GL7fN21P1fyTDIiL3W43qX9VibndrE7/Ugkyq/M2QhNvYJgSojuBElDU2uJtRhqfrFrpcy8+mBB9TD4PmKvonVvunfkQX5vr9tcctWkfKsyGSvLtUQ4bQXH3wCJJjJ579hDWS1PBuNJWEZ51GnmPZWL4QOaWZyPi+uThYhiWBCAQ7j8Iq1kTEJyHpjHGlGfXamu0EUR8Q0cIWM8TUWyILBKbdsKQ/MtP6FVJsso4BCWCrCCQEGQAnSZ9fhBw87v8zkBzW0iRblgGP+fhDFQLdqMtBMLHMwbZbXA/GbHx35K951mA1xQ4R39zFMQ+9ZoQ== danwheeler@LAPTOP-3DALUHP4'
+param aksClusterKubernetesVersion string = '1.30'
+param aksdnsPrefix string = 'agcaksdns'
+param linuxadmin string = 'admin'
+param sshkey string
 param akspodcidr string = '192.168.0.0/20'
 param aksserviceCidr string = '192.168.16.0/20'
 param aksinternalDNSIP string = '192.168.16.10'
@@ -22,7 +22,7 @@ param virtualNetwork_AddressPrefix string = '10.0.0.0/8'
 var managedidentity_name = 'aksmanagedidentity'
 var federated_id_subject = 'system:serviceaccount:azure-alb-system:alb-controller-sa'
 
-module vnet_module '../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
+module vnet_module '../../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
   name: VnetName
   params: {
     virtualNetwork_Name: VnetName
@@ -32,7 +32,7 @@ module vnet_module '../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
   }
 }
 
-module agc_module '../../modules/Microsoft.ServiceNetworking/appgw_for_containers.bicep' = {
+module agc_module '../../../modules/Microsoft.ServiceNetworking/appgw_for_containers.bicep' = {
   name: AGCname
   params: {
     FrontendName: 'agcFrontend'
@@ -46,7 +46,7 @@ module agc_module '../../modules/Microsoft.ServiceNetworking/appgw_for_container
   ]
 }
 
-module aks_module '../../modules/Microsoft.ContainerService/aks_cluster.bicep' = {
+module aks_module '../../../modules/Microsoft.ContainerService/aks_cluster.bicep' = {
   name: 'aks_deployment'
   params: {
     aksClusterName: aksClusterName
@@ -67,7 +67,7 @@ module aks_module '../../modules/Microsoft.ContainerService/aks_cluster.bicep' =
   ]
 }
 
-module managed_identity '../../modules/Microsoft.ManagedIdentity/managed_ID_and_federation.bicep' = {
+module managed_identity '../../../modules/Microsoft.ManagedIdentity/managed_ID_and_federation.bicep' = {
   name: 'managed_identity_deployment'
   params: {
     managedidentity_name: managedidentity_name
@@ -79,7 +79,7 @@ module managed_identity '../../modules/Microsoft.ManagedIdentity/managed_ID_and_
   ]
 }
 
-module authorizations '../../modules/Microsoft.Authorization/agc_roles.bicep' = {
+module authorizations '../../../modules/Microsoft.Authorization/agc_roles.bicep' = {
   name: 'agc_roles'
   params: {
     managedidentity_name: managedidentity_name

@@ -29,9 +29,9 @@ Write-Host "AzContext is set to the following:"
 Write-Host "Subscription: $($context.Subscription.Name) ($($context.Subscription.Id)) | Tenant: $($context.Tenant.Id)`n"
 
 $deploymentFilePath = ".\Lab_Deployments\${DeploymentName}"
-$mainBicepFile = "Lab_Deployments\${deploymentFilePath}\src\main.bicep"
-$mainParameterFile = "Lab_Deployments\${deploymentFilePath}\src\main.bicepparam"
-$iterationFile = "Lab_Deployments\${deploymentFilePath}\iteration.txt"
+$mainBicepFile = "${deploymentFilePath}\src\main.bicep"
+$mainParameterFile = "${deploymentFilePath}\src\main.bicepparam"
+$iterationFile = "${deploymentFilePath}\iteration.txt"
 
 # Define the search string for a sub level deployment
 $subscriptioncontextsearchString = "targetScope = 'subscription'"

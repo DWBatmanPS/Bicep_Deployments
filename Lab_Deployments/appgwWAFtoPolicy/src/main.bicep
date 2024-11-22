@@ -17,7 +17,7 @@ param isWAF bool = true
 
 param keyVaultName string = ''
 
-module virtualNetwork '../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
+module virtualNetwork '../../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
   name: virtualNetworkName
   params: {
     virtualNetwork_Name: virtualNetworkName
@@ -28,7 +28,7 @@ module virtualNetwork '../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
   }
 }
 
-module appgw '../../modules/Microsoft.Network/ApplicationGateway_v2_wafconfig.bicep' = {
+module appgw '../../../modules/Microsoft.Network/ApplicationGateway_v2_wafconfig.bicep' = {
   name: applicationGateWayName
   params: {
     applicationGateway_Name: applicationGateWayName
