@@ -32,7 +32,7 @@ module vnet_module '../../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
   }
 }
 
-module agc_module '../../../modules/Microsoft.ServiceNetworking/appgw_for_containers.bicep' = {
+/* module agc_module '../../../modules/Microsoft.ServiceNetworking/appgw_for_containers.bicep' = {
   name: AGCname
   params: {
     FrontendName: 'agcFrontend'
@@ -44,7 +44,7 @@ module agc_module '../../../modules/Microsoft.ServiceNetworking/appgw_for_contai
   dependsOn: [
     vnet_module
   ]
-}
+} */
 
 module aks_module '../../../modules/Microsoft.ContainerService/aks_cluster.bicep' = {
   name: 'aks_deployment'
@@ -89,7 +89,6 @@ module authorizations '../../../modules/Microsoft.Authorization/agc_roles.bicep'
   }
   dependsOn: [
     vnet_module
-    agc_module
   ]
 }
 

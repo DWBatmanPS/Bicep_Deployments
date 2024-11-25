@@ -49,7 +49,7 @@ resource k8s 'Microsoft.ContainerService/managedClusters@2024-06-02-preview' = {
     networkProfile: {
       loadBalancerSku: 'standard'
       networkPlugin: 'azure'
-      networkPolicy: 'azure'
+      networkPolicy: 'none'
       outboundType: 'loadBalancer'
       podCidr: akspodCidr
       serviceCidr: aksserviceCidr
