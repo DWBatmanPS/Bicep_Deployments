@@ -15,7 +15,9 @@ param(
 
     [bool]$subleveldeployment = $false,
     
-    [bool]$DeployWithParamFile = $true
+    [bool]$DeployWithParamFile = $true,
+
+    [bool]$Debuglog = $false
 )
 
 # Verifies that AzContext is set and displays the subscription information to where this deployment will be completed.
@@ -116,8 +118,18 @@ if ($subleveldeployment) {
     $stopwatch = [system.diagnostics.stopwatch]::StartNew()
     Write-Host "`nStarting Bicep Deployment.  Process began at: $(Get-Date -Format "HH:mm K")`n"
 
-    New-AzDeployment -name $DeploymentVersion -Location $Location -TemplateFile $mainBicepFile -TemplateParameterFile $mainParameterFile -AsJob
+    if ($Debuglog -eq $true) {
+        Write-Host "Deployment Version: $DeploymentVersion"
+        Write-Host "Location: $Location"
+        Write-Host "Template File: $mainBicepFile"
+        Write-Host "Parameter File: $mainParameterFile"
 
+        New-AzDeployment -name $DeploymentVersion -Location $Location -TemplateFile $mainBicepFile -TemplateParameterFile $mainParameterFile -AsJob -DeploymentDebugLogLevel All
+    }
+    else {
+            New-AzDeployment -name $DeploymentVersion -Location $Location -TemplateFile $mainBicepFile -TemplateParameterFile $mainParameterFile -AsJob
+
+    }
     Write-Host "The deployment can be monitored by navigating to the URL below: "
     Write-Host -ForegroundColor Blue "https://portal.azure.com/#@/subscriptions/$($context.Subscription.Id)/providers/Microsoft.Resources/deployments/${DeploymentVersion}`n"
 }
@@ -185,10 +197,31 @@ else{
     Write-Host -ForegroundColor Blue "https://portal.azure.com/#@/resource/subscriptions/$($context.Subscription.Id)/resourceGroups/${rgName}/deployments`n"
 
     if ($DeployWithParamFile) {
-        New-AzResourceGroupDeployment -ResourceGroupName $rgName -TemplateFile $mainBicepFile -TemplateParameterFile $mainParameterFile
+
+        if ($Debuglog -eq $true) {
+            Write-Host "Location: $Location"
+            Write-Host "Template File: $mainBicepFile"
+            Write-Host "Parameter File: $mainParameterFile"
+
+            New-AzResourceGroupDeployment -ResourceGroupName $rgName -TemplateFile $mainBicepFile -TemplateParameterFile $mainParameterFile -DeploymentDebugLogLevel All
+        }
+        else {
+            New-AzResourceGroupDeployment -ResourceGroupName $rgName -TemplateFile $mainBicepFile -TemplateParameterFile $mainParameterFile
+        }
+
     }
     else {
-        New-AzResourceGroupDeployment -ResourceGroupName $rgName -TemplateFile $mainBicepFile
+        if ($Debuglog -eq $true) {
+            Write-Host "Location: $Location"
+            Write-Host "Template File: $mainBicepFile"
+            Write-Host "Parameter File: $mainParameterFile"
+
+            New-AzResourceGroupDeployment -ResourceGroupName $rgName -TemplateFile $mainBicepFile -TemplateParameterFile $mainParameterFile -DeploymentDebugLogLevel All
+        }
+        else {
+            New-AzResourceGroupDeployment -ResourceGroupName $rgName -TemplateFile $mainBicepFile -TemplateParameterFile $mainParameterFile
+        }
+        
     }
 }
 

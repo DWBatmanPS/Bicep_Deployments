@@ -3,7 +3,7 @@ param agcSubnetname string
 param vnetName string
 param managedidentity_principalid string
 
-var agcSubnetId = resourceId(resourceGroup().name, 'Microsoft.Network/virtualNetworks', vnetName, 'subnets', agcSubnetname)
+var agcSubnetId = resourceId('Microsoft.Network/virtualNetworks/subnets', vnetName, agcSubnetname)
 var agc_role = 'fbc52c3f-28ad-4303-a892-8a056630b8f1'
 var netcontrib_role = '4d97b98b-1d4f-4787-a291-c67834d212e7'
 
