@@ -15,7 +15,7 @@ resource ManagedIdFederation 'Microsoft.ManagedIdentity/userAssignedIdentities/f
   parent: ManagedID
   properties: {
     audiences: [
-      environment().suffixes.acrLoginServer
+      'api://AzureADTokenExchange'
     ]
     issuer: aks_oidc_issuer
     subject: federated_id_subject
@@ -26,3 +26,4 @@ resource ManagedIdFederation 'Microsoft.ManagedIdentity/userAssignedIdentities/f
 output clientID string = ManagedID.properties.clientId
 output PrincipalID string = ManagedID.properties.principalId
 output ManagedID_Federation string = ManagedIdFederation.name
+output ManagedID_Name string = ManagedID.name

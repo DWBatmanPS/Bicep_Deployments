@@ -71,3 +71,4 @@ resource k8s 'Microsoft.ContainerService/managedClusters@2024-06-02-preview' = {
 output controlPlaneFQDN string = k8s.properties.fqdn
 output aks_oidc_issuer string = k8s.properties.oidcIssuerProfile.issuerURL
 output aks_cluster_id string = k8s.id
+output aks_cluster_name string = k8s.name

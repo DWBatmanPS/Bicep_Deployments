@@ -30,6 +30,7 @@ param subnet_Names array = [
   'AzureBastionSubnet'
   'PrivateResolver_Inbound'
   'PrivateResolver_Outbound'
+  'AKSSubnet'
 ]
 
 param nvaIpAddress string = '10.0.0.4'
@@ -58,10 +59,10 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' = {
         name: subnet_Name
         properties: {
           addressPrefix: '${baseOctets[0]}.${baseOctets[1]}.${index}.0/24'
-          networkSecurityGroup: (subnet_Name != 'AGCSubnet' && subnet_Name != 'AzureFirewallSubnet' && subnet_Name != 'AzureFirewallManagementSubnet' && subnet_Name != 'GatewaySubnet' && subnet_Name != 'AGSubnet') ? {
+          networkSecurityGroup: (subnet_Name != 'AGCSubnet' && subnet_Name != 'AzureFirewallSubnet' && subnet_Name != 'AzureFirewallManagementSubnet' && subnet_Name != 'GatewaySubnet' && subnet_Name != 'AGSubnet' && subnet_Name != 'AzureBastionSubnet' && subnet_Name != 'AKSSubnet') ? {
             id: networkSecurityGroup.id
           } : null
-          routeTable: (deployudr && (subnet_Name != 'AzureFirewallSubnet' && subnet_Name != 'AzureFirewallManagementSubnet' && subnet_Name != 'GatewaySubnet' && subnet_Name != 'AGCSubnet' && subnet_Name != 'AGSubnet')) ? {
+          routeTable: (deployudr && (subnet_Name != 'AzureFirewallSubnet' && subnet_Name != 'AzureFirewallManagementSubnet' && subnet_Name != 'GatewaySubnet' && subnet_Name != 'AGCSubnet' && subnet_Name != 'AGSubnet' && subnet_Name != 'AzureBastionSubnet')) ? {
             id: routeTable.id
           } : null
           delegations: (subnet_Name == 'AGCSubnet') ? [

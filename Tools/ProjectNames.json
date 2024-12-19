@@ -1,15 +1,18 @@
 [
     {
+        "Name":  "WAF-Policy-Only"
+    },
+    {
         "Name":  "appgwWAFtoPolicy"
     },
     {
         "Name":  "appgwAZFW_ZeroTrustLab"
     },
     {
-        "Name":  "AGIC_Helm_Upgrade"
+        "Name":  "ATM_Deployment"
     },
     {
-        "Name":  "WAF-Policy-Only"
+        "Name":  "AGIC_HELM_Bicep"
     },
     {
         "Name":  "WAF-Policy-Only\n"
@@ -18,7 +21,7 @@
         "Name":  "appgwWAFtoPolicy"
     },
     {
-        "Name":  "ATM_Deployment"
+        "Name":  "AGIC_Helm_Upgrade"
     },
     {
         "Name":  "Domain_resources"
@@ -40,5 +43,8 @@
     },
     {
         "Name":  "Appgw_Rewrites"
+    },
+    {
+        "Name":  "Appgw_WindowsVM_Backend"
     }
 ]

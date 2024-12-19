@@ -1,3 +1,7 @@
+@allowed([ 'OnSuccess', 'OnExpiration', 'Always' ])
+@description('When the script resource is cleaned up')
+param cleanupPreference string = 'OnSuccess'
+
 resource RandomString 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
   name: 'GenerateRandomString'
   location: resourceGroup().location
@@ -13,6 +17,7 @@ resource RandomString 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
     $DeploymentScriptOutputs = @{}
     $DeploymentScriptOutputs['RandString'] = $randomString
     '''
+    cleanupPreference: cleanupPreference
   }
 }
 
