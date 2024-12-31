@@ -137,7 +137,8 @@ AzureNetworkingLabs2.zip
 *.tar.lz4
 *.tar.lzop
 
-
+#Ignore Iterations File
+iteration.txt
 
 #Bicep Parameter files
 *.bicepparam

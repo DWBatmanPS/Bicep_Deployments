@@ -66,19 +66,6 @@ module AppGateway '../../../modules/Microsoft.Network/ApplicationGateway_v2.bice
   ]
 }
 
-/*  module authorization '../../../modules/Microsoft.Authorization/agic_role.bicep' = {
-  name: 'agic_role'
-  params: {
-    serviceprincipal_client_Id: serviceprincipal_client_Id 
-    appgwname: appgwname
-    vnetName: VnetName
-  }
-  dependsOn: [
-    AppGateway
-    Vnet
-  ]
-}  */
-
 module ManagedID '../../../modules/Microsoft.ManagedIdentity/managed_ID_and_federation.bicep' = {
   name: 'managed_identity'
   params: {
@@ -137,26 +124,6 @@ module AGICRole '../../../modules/Microsoft.Authorization/agic_role.bicep' = {
     NetContribRole
   ]
 }
-
-/* resource Sleep 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
-  name: 'Sleep'
-  location: resourceGroup().location
-  kind: 'AzurePowerShell'
-  properties: {
-    azPowerShellVersion: '9.0'
-    retentionInterval: 'P1D'
-    scriptContent: '''
-    Start-Sleep -Seconds 120
-    '''
-  }
-  dependsOn: [
-    AGICRole
-    AKSCluster
-    AppGateway
-    Vnet
-    ManagedID
-  ]
-} */
 
 module AGIC_Helm_Install '../../../modules/Microsoft.Resources/AGIC_Helm_Deployment.Bicep' = {
   name: 'agic_helm_install'

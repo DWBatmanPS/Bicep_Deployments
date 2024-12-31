@@ -128,6 +128,7 @@ resource runAksCommand 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
       { name: 'AppgwID', value: AppGatewayID}
       { name: 'ClientID', value: ClientID}
       { name: 'DeployName', value: DeployName}
+      { name: 'verbosityLevel', value: '5'}
     ]
     scriptContent: loadTextContent('../../scripts/agic-aks-run-command-file.sh')
     cleanupPreference: cleanupPreference
