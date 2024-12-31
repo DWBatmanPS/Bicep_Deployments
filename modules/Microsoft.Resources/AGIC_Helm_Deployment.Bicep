@@ -94,7 +94,7 @@ resource rbac 'Microsoft.Authorization/roleAssignments@2022-04-01' = [for roleDe
   }
 }]
 
-resource runAksCommand 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
+resource runAksCommand 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
   name: 'AKS-Run-${aks.name}-${deployment().name}'
   location: location
   identity: {
@@ -129,14 +129,13 @@ resource runAksCommand 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
       { name: 'ClientID', value: ClientID}
       { name: 'DeployName', value: DeployName}
     ]
-    scriptContent: loadTextContent('agic-aks-run-command.sh')
+    scriptContent: loadTextContent('../../scripts/agic-aks-run-command-file.sh')
     cleanupPreference: cleanupPreference
   }
 }
 
-/* @description('Array of command output from each Deployment Script AKS run command')
+@description('Array of command output from each Deployment Script AKS run command')
 output commandOutput object ={
   Name: runAksCommand.name
   CommandOutput: runAksCommand.properties.outputs
 }
- */

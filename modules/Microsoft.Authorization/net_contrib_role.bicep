@@ -11,7 +11,7 @@ param randomstring string
 param resourcetype string = 'subnet'
 
 var netcontrib_role = '4d97b98b-1d4f-4787-a291-c67834d212e7'
-var RG = resourcetype == 'subnet' ? false : resourcetype == 'vnet' ? false : true
+//var RG = resourcetype == 'subnet' ? false : resourcetype == 'vnet' ? false : true
 var isresource = resourcetype == 'subnet' ? true : resourcetype == 'vnet' ? true : false
 var issubnet = resourcetype == 'subnet' ? true : false
 

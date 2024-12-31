@@ -25,7 +25,7 @@ echo -n $helmAppValues | base64 -d > $helmValuesFileName
 echo "Helm values file created and stored at $helmValuesFileName"
 
 echo "Sending command to AKS Cluster $aksName in $RG"
-cmdOut=$(az aks command invoke -g $RG -n $aksName --command "helm install '${DeployName}' 'oci://mcr.microsoft.com/azure-application-gateway/charts/ingress-azure' --namespace ${AGICNamespace} --version 1.7.5 --create-namespace  --set 'appgw.name=${AppgwID}' --set 'appgw.resourceGroup=${RG}' --set 'appgw.subscriptionId=${SubscriptionID}' --set 'appgw.shared=false' --set 'armAuth.type=workloadIdentity'  --set 'armAuth.identityClientID=${ClientID}' --set 'rbac.enabled=true' --set 'verbosityLevel=5' --output json" -o json)
+cmdOut=$(az aks command invoke -g $RG -n $aksName --command "helm install '${DeployName}' 'oci://mcr.microsoft.com/azure-application-gateway/charts/ingress-azure' --namespace ${AGICNamespace} --version 1.7.5 --create-namespace  --set 'appgw.name=${AppgwID}' --set 'appgw.resourceGroup=${RG}' --set 'appgw.subscriptionId=${SubscriptionID}' --set 'appgw.shared=false' --set 'armAuth.type=workloadIdentity'  --set 'armAuth.identityClientID=${ClientID}' --set 'rbac.enabled=true' --set 'verbosityLevel=5'" -o json)
 echo $cmdOut
 
 jsonOutputString=$cmdOut
