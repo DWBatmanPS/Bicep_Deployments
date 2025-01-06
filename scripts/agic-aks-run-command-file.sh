@@ -35,8 +35,15 @@ rbac:
 verbosityLevel: '${verbosityLevel}'
 EOF
 
-echo -n $helmAppValues | base64 -d > $helmValuesFileName
+#echo -n $helmAppValues | base64 -d > $helmValuesFileName
 echo "Helm values file created and stored at $helmValuesFileName"
+
+echo "Helm values are as follows:
+AppgwID: ${AppgwID}
+RG: ${RG}
+subscriptionID: ${subscriptionID}
+ClientID: ${ClientID}
+verbosityLevel: ${verbosityLevel}"
 
 echo "Sending command to AKS Cluster $aksName in $RG"
 cmdOut=$(az aks command invoke -g $RG -n $aksName --command "helm install '${DeployName}' 'oci://mcr.microsoft.com/azure-application-gateway/charts/ingress-azure' --namespace ${AGICNamespace} --version 1.7.5 --create-namespace -f ${helmValuesFileName} --debug" --file $helmValuesFileName -o json)
