@@ -8,7 +8,7 @@ resource contrib_role 'Microsoft.Authorization/roleDefinitions@2022-04-01' exist
 }
 
 resource automation_contrib_role 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
-  name: guid('dw1-automation-contrib-role')
+  name: guid(automation_managedID_principal, 'dw1-automation-contrib-role')
   properties: {
     principalId: automation_managedID_principal
     roleDefinitionId: contrib_role.id

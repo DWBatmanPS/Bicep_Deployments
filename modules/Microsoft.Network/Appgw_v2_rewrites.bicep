@@ -109,7 +109,7 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2024-05-01' =
   identity: (nossl) ? null :{
     type: 'UserAssigned'
     userAssignedIdentities: {
-      '${resourceId('DWDomainResources','Microsoft.ManagedIdentity/userAssignedIdentities/',keyvault_managed_ID)}': {}
+      '${resourceId('Domain_resources_RG_2','Microsoft.ManagedIdentity/userAssignedIdentities/',keyvault_managed_ID)}': {}
     }
   }
   properties: {

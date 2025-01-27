@@ -8,3 +8,5 @@ resource Example_RG 'Microsoft.Resources/resourceGroups@2022-09-01' = {
   name: RGName
   location: DeploymentLocation
 }
+
+output ResourceGroup object = Example_RG

@@ -1,5 +1,7 @@
 param ATM_Name string = 'bicep-atm-profile'
 
+param atmsubdomain string = 'bicep-atm-profile'
+
 @allowed([
   'Priority'
   'Weighted'
@@ -40,17 +42,17 @@ param weight array = [
 
 param customHostNeeded bool = false
 
-var location = resourceGroup().location
+var globallocation = 'global'
 var port = probeProtocol == 'HTTP' ? 80 : probeProtocol == 'HTTPS' ? 443 : customPort
 
 resource ATM 'Microsoft.Network/trafficmanagerprofiles@2022-04-01' = {
   name: ATM_Name
-  location: location
+  location: globallocation
   properties: {
     profileStatus: 'Enabled'
     trafficRoutingMethod: RoutingMethod
     dnsConfig: {
-      relativeName: 'atm'
+      relativeName: atmsubdomain
       ttl: 60
     }
     monitorConfig: {

@@ -63,13 +63,14 @@ if ($subleveldeployment) {
         $rgName = "${DeploymentName}_RG_${iteration}"
     }
     else {
-        $iteration = 0
+        $iteration = 1
         New-Item -ItemType File -Path $iterationFile
         Set-Content -Path $iterationFile -Value "${iteration}"
+        $iteration = [int](Get-Content $iterationFile)
     }
 
     # Define the regex pattern to match all RGName parameters
-    $pattern = "param RGName\d+ = '([^']*)'"
+    $pattern = "(param\s+RGName\d+\s*=\s*')([^']*?)-?(\d*)?'"
 
     # Define the additional text to append
     $iterationnumber = "-${iteration}"
@@ -83,22 +84,23 @@ if ($subleveldeployment) {
     # Iterate through each match and update the value
     foreach ($match in $regexmatches) {
         # Extract the existing value within the quotes
-        $existingValue = $match.Groups[1].Value
+        $prefix = $match.Groups[1].Value
+        $existingValue = $match.Groups[2].Value
+        $suffix = $match.Groups[3].Value
 
         # Create the new value by appending the additional text
         $newValue = "$existingValue$iterationnumber"
 
         # Replace the matched string with the new value in the content
-        $content = $content -replace [regex]::Escape($match.Value), $match.Value -replace $existingValue, $newValue
-        Write-Host "Checking if ${match.Value} exists."
-        $RGExists = Get-AzResourceGroup -Name $match.Value -ErrorAction SilentlyContinue
+        $content = $content -replace [regex]::Escape($match.Value), "${prefix}$newValue'"
+        Write-Host "Checking if resource group ${newvalue} exists."
+        $RGExists = Get-AzResourceGroup -Name $newvalue -ErrorAction SilentlyContinue
         
         if (-not $RGexists) {
-            Write-Output "Resource group ${match.Value} does not exist."
-            exit 1
+            Write-Output "Resource group $newvalue does not exist."
         }
         else {
-            Write-Output "Resource group ${match.Value} exists. Exiting deployment. Please try again."
+            Write-Output "Resource group ${newvalue} exists. Exiting deployment. Please try again."
             Set-Content -Path $iterationFile -Value "$($iteration + 1)"
             exit
         }
@@ -113,9 +115,6 @@ if ($subleveldeployment) {
 
     Set-Content -Path $iterationFile -Value "$($iteration + 1)"
 
-
-    New-AzResourceGroup -Name $rgName -Location $Location
-
     $stopwatch = [system.diagnostics.stopwatch]::StartNew()
     Write-Host "`nStarting Bicep Deployment.  Process began at: $(Get-Date -Format "HH:mm K")`n"
 
@@ -125,14 +124,14 @@ if ($subleveldeployment) {
         Write-Host "Template File: $mainBicepFile"
         Write-Host "Parameter File: $mainParameterFile"
 
-        New-AzDeployment -name $DeploymentVersion -Location $Location -TemplateFile $mainBicepFile -TemplateParameterFile $mainParameterFile -AsJob -DeploymentDebugLogLevel All
+        New-AzDeployment -name $DeploymentVersion -Location $Location -TemplateFile $mainBicepFile -TemplateParameterFile $mainParameterFile -DeploymentDebugLogLevel All
     }
     else {
             New-AzDeployment -name $DeploymentVersion -Location $Location -TemplateFile $mainBicepFile -TemplateParameterFile $mainParameterFile -AsJob
 
     }
-    Write-Host "The deployment can be monitored by navigating to the URL below: "
-    Write-Host -ForegroundColor Blue "https://portal.azure.com/#@/subscriptions/$($context.Subscription.Id)/providers/Microsoft.Resources/deployments/${DeploymentVersion}`n"
+    #Write-Host "The deployment can be monitored by navigating to the URL below: "
+    #Write-Host -ForegroundColor Blue "https://portal.azure.com/#@/subscriptions/$($context.Subscription.Id)/providers/Microsoft.Resources/deployments/${DeploymentVersion}`n"
 }
 
 else{
@@ -146,7 +145,7 @@ else{
         $rgName = "${DeploymentName}_RG_${iteration}"
     }
     else {
-        $iteration = 0
+        $iteration = 1
         New-Item -ItemType File -Path $iterationFile
         Set-Content -Path $iterationFile -Value "${iteration}"
     }
