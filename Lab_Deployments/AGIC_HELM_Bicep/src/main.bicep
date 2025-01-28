@@ -1,7 +1,7 @@
 param aksClusterName string = 'aks'
 param aksClusterNodeCount int = 3
 param aksClusterNodeSize string = 'Standard_D2s_v3'
-param aksClusterKubernetesVersion string = '1.29.4'
+param aksClusterKubernetesVersion string = '1.31'
 param aksdnsPrefix string 
 param linuxadmin string
 param sshkey string = ''
