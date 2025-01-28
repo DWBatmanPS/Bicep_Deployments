@@ -67,6 +67,7 @@ if ($subleveldeployment) {
         New-Item -ItemType File -Path $iterationFile
         Set-Content -Path $iterationFile -Value "${iteration}"
         $iteration = [int](Get-Content $iterationFile)
+        $rgName = "${DeploymentName}_RG_${iteration}"
     }
 
     # Define the regex pattern to match all RGName parameters
@@ -148,6 +149,7 @@ else{
         $iteration = 1
         New-Item -ItemType File -Path $iterationFile
         Set-Content -Path $iterationFile -Value "${iteration}"
+        $rgName = "${DeploymentName}_RG_${iteration}"
     }
 
     if (Get-AzResourceGroup -Name $rgName -ErrorAction SilentlyContinue) {
