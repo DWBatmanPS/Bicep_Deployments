@@ -1,6 +1,3 @@
-@description('Azure Datacenter that the resource is deployed to')
-param location string
-
 @description('''
 Storage account name restrictions:
 - Storage account names must be between 3 and 24 characters in length and may contain numbers and lowercase letters only.
@@ -9,12 +6,19 @@ Storage account name restrictions:
 @minLength(3)
 @maxLength(24)
 param storageAccount_Name string
-
+param publicAccess bool = true
 param tagValues object = {}
+param blob bool = true
+param file bool = true
+param queue bool = true
+param table bool = true
+param web bool = true
+param enableHttpsTrafficOnly bool = true
 
 // Grabs the FQDN of the Blob but removes the extra that we don't need
 // Original value https://{storageAccount_Name}.blob.core.windows.net/
 // Output {storageAccount_Name}.blob.core.windows.net
+var storageAccount_lower = toLower(storageAccount_Name)
 var blobEndpoint = storageAccount.properties.primaryEndpoints.blob
 var blobEndpointNoHTTPS = substring(blobEndpoint, 7, 8)
 var blobFQDN = take(blobEndpointNoHTTPS, length(blobEndpointNoHTTPS) - 1)
@@ -29,8 +33,8 @@ var fileFQDN = take(fileEndpointNoHTTPS, length(fileEndpointNoHTTPS) - 1)
 
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
-  name: storageAccount_Name
-  location: location
+  name: storageAccount_lower
+  location: resourceGroup().location
   sku: {
     name: 'Standard_LRS'
   }
@@ -41,7 +45,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
     publicNetworkAccess: 'Disabled'
     allowCrossTenantReplication: true
     minimumTlsVersion: 'TLS1_2'
-    allowBlobPublicAccess: true
+    allowBlobPublicAccess: publicAccess
     allowSharedKeyAccess: true
     networkAcls: {
       bypass: 'AzureServices'
@@ -49,7 +53,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
       ipRules: []
       defaultAction: 'Deny'
     }
-    supportsHttpsTrafficOnly: true
+    supportsHttpsTrafficOnly: enableHttpsTrafficOnly
     encryption: {
       requireInfrastructureEncryption: false
       services: {
@@ -69,7 +73,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
   tags: tagValues
 }
 
-resource storageAccount_BlobServices 'Microsoft.Storage/storageAccounts/blobServices@2023-01-01' = {
+resource storageAccount_BlobServices 'Microsoft.Storage/storageAccounts/blobServices@2023-01-01' = if (blob){
   parent: storageAccount
   name: 'default'
   properties: {
@@ -95,12 +99,12 @@ resource storageAccount_BlobServices 'Microsoft.Storage/storageAccounts/blobServ
   }
 }
 
-resource storageAccount_File 'Microsoft.Storage/storageAccounts/fileServices@2023-01-01' = {
+resource storageAccount_File 'Microsoft.Storage/storageAccounts/fileServices@2023-01-01' = if (file) {
   parent: storageAccount
   name: 'default'
 }
 
-resource storageAccount_File_FileShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2023-01-01' = {
+resource storageAccount_File_FileShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2023-01-01' = if (file) {
   parent: storageAccount_File
   name: 'defaultfileshare'
   properties: {
