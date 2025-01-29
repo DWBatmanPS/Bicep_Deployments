@@ -1,6 +1,3 @@
-@description('Azure Datacenter that the resource is deployed to')
-param location string
-
 @description('Name of the Virtual Machines Network Interface')
 param networkInterface_Name string
 
@@ -27,7 +24,7 @@ param tagValues object = {}
 
 resource networkInterfaceWithoutPubIP 'Microsoft.Network/networkInterfaces@2022-09-01' = if (!addPublicIPAddress) {
   name: networkInterface_Name
-  location: location
+  location: resourceGroup().location
   properties: {
     ipConfigurations: [
       {
@@ -53,7 +50,7 @@ resource networkInterfaceWithoutPubIP 'Microsoft.Network/networkInterfaces@2022-
 
 resource networkInterfaceWithPubIP 'Microsoft.Network/networkInterfaces@2022-09-01' = if (addPublicIPAddress) {
   name: networkInterface_Name
-  location: location
+  location: resourceGroup().location
   properties: {
     ipConfigurations: [
       {
@@ -82,7 +79,7 @@ resource networkInterfaceWithPubIP 'Microsoft.Network/networkInterfaces@2022-09-
 
 resource publicIPAddress 'Microsoft.Network/publicIPAddresses@2023-06-01' = if (addPublicIPAddress) {
   name: '${networkInterface_Name}_PIP'
-  location: location
+  location: resourceGroup().location
   sku: {
     name: 'Standard'
     tier: 'Regional'

@@ -1,5 +1,3 @@
-param location string
-
 @maxLength(15)
 @description('Name of the Virtual Machine')
 param virtualMachine_Name string
@@ -59,7 +57,6 @@ module networkInterface '../../Microsoft.Network/NetworkInterface.bicep' = {
   name: networkInterface_Name
   params: {
     acceleratedNetworking: acceleratedNetworking
-    location: location
     networkInterface_Name: networkInterface_Name
     subnet_ID: subnet_ID
     privateIPAddress: privateIPAddress
@@ -71,7 +68,7 @@ module networkInterface '../../Microsoft.Network/NetworkInterface.bicep' = {
 
 resource virtualMachine_Linux 'Microsoft.Compute/virtualMachines@2023-03-01' = {
   name: virtualMachine_Name
-  location: location
+  location: resourceGroup().location
   properties: {
     hardwareProfile: {
       vmSize: virtualMachine_Size
@@ -129,7 +126,7 @@ resource virtualMachine_Linux 'Microsoft.Compute/virtualMachines@2023-03-01' = {
 resource virtualMachine_NetworkWatcherExtension 'Microsoft.Compute/virtualMachines/extensions@2022-11-01' = {
   parent: virtualMachine_Linux
   name: 'AzureNetworkWatcherExtension'
-  location: location
+  location: resourceGroup().location
   properties: {
     autoUpgradeMinorVersion: true
     publisher: 'Microsoft.Azure.NetworkWatcher'
@@ -142,7 +139,7 @@ resource virtualMachine_NetworkWatcherExtension 'Microsoft.Compute/virtualMachin
 resource vm_CustomScriptExtension 'Microsoft.Compute/virtualMachines/extensions@2021-11-01' = {
   parent: virtualMachine_Linux
   name: 'installcustomscript'
-  location: location
+  location: resourceGroup().location
   properties: {
     publisher: 'Microsoft.Azure.Extensions'
     type: 'CustomScript'
