@@ -139,6 +139,8 @@ resource virtualMachine_Windows 'Microsoft.Compute/virtualMachines@2022-11-01' =
         enabled: true
       }
     }
+    evictionPolicy: 'Deallocate'
+    priority: 'Spot'
   }
   tags: tagValues
 }

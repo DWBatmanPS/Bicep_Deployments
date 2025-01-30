@@ -119,6 +119,8 @@ resource virtualMachine_Linux 'Microsoft.Compute/virtualMachines@2023-03-01' = {
         enabled: true
       }
     }
+    evictionPolicy: 'Deallocate'
+    priority: 'Spot'
   }
   tags: tagValues
 }

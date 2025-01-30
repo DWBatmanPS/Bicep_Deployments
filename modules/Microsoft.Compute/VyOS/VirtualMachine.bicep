@@ -49,7 +49,6 @@ module networkInterface '../../Microsoft.Network/NetworkInterface.bicep' = {
   name: networkInterface_Name
   params: {
     acceleratedNetworking: acceleratedNetworking
-    location: location
     networkInterface_Name: networkInterface_Name
     subnet_ID: subnet_ID
     privateIPAddress: privateIPAddress
@@ -109,6 +108,8 @@ resource virtualMachine_Linux 'Microsoft.Compute/virtualMachines@2023-03-01' = {
         enabled: true
       }
     }
+    evictionPolicy: 'Deallocate'
+    priority: 'Spot'
   }
   tags: tagValues
 }
