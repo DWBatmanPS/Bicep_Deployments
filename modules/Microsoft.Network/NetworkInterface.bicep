@@ -20,6 +20,10 @@ param subnet_ID string
 @description('Adds a Public IP to the Network Interface of the Virtual Machine if true.')
 param addPublicIPAddress bool = false
 
+param addtoloadbalancer bool = false
+
+param loadbalancername string = ''
+
 param tagValues object = {}
 
 resource networkInterfaceWithoutPubIP 'Microsoft.Network/networkInterfaces@2022-09-01' = if (!addPublicIPAddress) {
@@ -37,6 +41,11 @@ resource networkInterfaceWithoutPubIP 'Microsoft.Network/networkInterfaces@2022-
           primary: true
           privateIPAddressVersion: 'IPv4'
           privateIPAddress: privateIPAddress
+          loadBalancerBackendAddressPools: (addtoloadbalancer) ? [
+            {
+              id: resourceId('Microsoft.Network/loadBalancers/backendAddressPools', loadbalancername, 'bep')
+            }
+          ] : []
         }
       }
     ]

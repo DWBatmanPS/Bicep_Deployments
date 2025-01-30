@@ -54,6 +54,10 @@ param privateIPAllocationMethod string = 'Dynamic'
 @description('Enter the Static IP Address here if privateIPAllocationMethod is set to Static.')
 param privateIPAddress string = ''
 
+param addtoloadbalancer bool = false
+
+param loadbalancername string = ''
+
 param tagValues object = {}
 
 
@@ -66,6 +70,8 @@ module networkInterface '../../Microsoft.Network/NetworkInterface.bicep' = {
     addPublicIPAddress: addPublicIPAddress
     privateIPAllocationMethod: privateIPAllocationMethod
     privateIPAddress: privateIPAddress
+    addtoloadbalancer: addtoloadbalancer
+    loadbalancername: loadbalancername
     tagValues: tagValues
   }
 }

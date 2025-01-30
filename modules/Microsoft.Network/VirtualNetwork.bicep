@@ -39,6 +39,9 @@ param subnet_Names array = [
 param nvaIpAddress string = '10.0.0.4'
 param deployudr bool = true
 param customsourceaddresscidr string = '208.107.184.241/32'
+param deploy_NatGateway bool = false
+param publicipname string = 'Nat_Gateway_VIP'
+param natgatewayname string = 'Nat_Gateway'
 
 var location = resourceGroup().location
 var baseAddress = split(virtualNetwork_AddressPrefix, '/')[0]
@@ -76,6 +79,9 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' = {
               }
             }
           ] : null
+          natGateway: (deploy_NatGateway && deployudr != true && (subnet_Name != 'AzureFirewallSubnet' && subnet_Name != 'AzureFirewallManagementSubnet' && subnet_Name != 'GatewaySubnet' && subnet_Name != 'AGCSubnet' && subnet_Name != 'AGSubnet' && subnet_Name != 'AzureBastionSubnet' && subnet_Name != 'NVATrust' && subnet_Name != 'NVAUntrust' && subnet_Name != 'NVAMgmt')) ? {
+            id: natgateway.id
+          } : null
         }
       }
     ]
@@ -231,6 +237,34 @@ resource networkSecurityGroup_ApplicationGateway 'Microsoft.Network/networkSecur
   tags: tagValues
 }
 
+resource publicip 'Microsoft.Network/publicIPAddresses@2021-05-01' = {
+  name: publicipname
+  location: resourceGroup().location
+  sku: {
+    name: 'Standard'
+  }
+  properties: {
+    publicIPAddressVersion: 'IPv4'
+    publicIPAllocationMethod: 'Static'
+    idleTimeoutInMinutes: 4
+  }
+}
+
+resource natgateway 'Microsoft.Network/natGateways@2021-05-01' = {
+  name: natgatewayname
+  location: resourceGroup().location
+  sku: {
+    name: 'Standard'
+  }
+  properties: {
+    idleTimeoutInMinutes: 4
+    publicIpAddresses: [
+      {
+        id: publicip.id
+      }
+    ]
+  }
+}
 // resource networkSecurityGroup_ApplicationGateway_AppGWSpecificRule 'Microsoft.Network/networkSecurityGroups/securityRules@2022-11-01' = {
 //   parent: networkSecurityGroup_ApplicationGateway
 //   name: 'AllowGatewayManager'
