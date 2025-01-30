@@ -3,54 +3,57 @@
     "Name": "WAF-Policy-Only"
   },
   {
-    "Name": "AGIC_Helm_Upgrade"
-  },
-  {
-    "Name": "appgwWAFtoPolicy"
-  },
-  {
-    "Name": "appgwAZFW_ZeroTrustLab"
-  },
-  {
-    "Name": "ATM_Deployment"
-  },
-  {
-    "Name": "AGIC_HELM_Bicep"
-  },
-  {
-    "Name": "WAF-Policy-Only\n"
-  },
-  {
-    "Name": "appgwWAFtoPolicy"
-  },
-  {
-    "Name": "Domain_resources"
-  },
-  {
-    "Name": "Appgw_WindowsVM_Backend"
-  },
-  {
-    "Name": "AGIC_StandalonePowershell"
-  },
-  {
-    "Name": "AFDx_Deployment"
-  },
-  {
-    "Name": "AGC_Deployment"
-  },
-  {
-    "Name": "Appgw_Webapp_backend"
-  },
-  {
-    "Name": "AZFW_Deployment"
+    "Name": "Resource_storage"
   },
   {
     "Name": "Appgw_Rewrites"
   },
   {
-    "Name": "Resource_storage"
+    "Name": "AZFW_Deployment"
+  },
+  {
+    "Name": "Appgw_Webapp_backend"
+  },
+  {
+    "Name": "AGC_Deployment"
+  },
+  {
+    "Name": "AFDx_Deployment"
+  },
+  {
+    "Name": "AGIC_StandalonePowershell"
   },
   {
     "Name": "NVA_Lab"
+  },
+  {
+    "Name": "Appgw_WindowsVM_Backend"
+  },
+  {
+    "Name": "appgwWAFtoPolicy"
+  },
+  {
+    "Name": "WAF-Policy-Only\n"
+  },
+  {
+    "Name": "AGIC_HELM_Bicep"
+  },
+  {
+    "Name": "ATM_Deployment"
+  },
+  {
+    "Name": "appgwAZFW_ZeroTrustLab"
+  },
+  {
+    "Name": "appgwWAFtoPolicy"
+  },
+  {
+    "Name": "AGIC_Helm_Upgrade"
+  },
+  {
+    "Name": "Domain_resources"
+  },
+  {
+    "Name": "Appgw_WindowsVM_WAF"
   }
 ]

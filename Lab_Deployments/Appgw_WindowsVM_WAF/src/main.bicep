@@ -39,7 +39,7 @@ module appgw '../../../modules/Microsoft.Network/ApplicationGateway_v2.bicep' = 
     keyVaultName: keyVaultName
     keyvault_managed_ID: keyvault_managed_ID
     certname: certname
-    isWAF: false
+    isWAF: true
     backendPoolFQDNs: []
     backendpoolIPAddresses: [
       '${VM.outputs.networkInterface_PrivateIPAddress}'

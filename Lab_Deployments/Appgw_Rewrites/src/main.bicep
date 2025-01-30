@@ -46,7 +46,6 @@ module appgw '../../../modules/Microsoft.Network/Appgw_v2_rewrites.bicep' = {
   }
   dependsOn: [
     virtualNetwork
-    VM
   ]
 }
 
@@ -54,7 +53,6 @@ module VM '../../../modules/Microsoft.Compute/WindowsServer2022/VirtualMachine.b
   name: 'VM'
   params: {
     acceleratedNetworking: true
-    location: resourceGroup().location
     virtualMachine_Name: VMName
     virtualMachine_AdminPassword: VMAdminPassword
     virtualMachine_AdminUsername: VMAdminUsername
