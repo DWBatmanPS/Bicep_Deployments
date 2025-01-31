@@ -150,6 +150,10 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2022-11-01' =
     trustedRootCertificates: []
     trustedClientCertificates: []
     sslProfiles: []
+    sslPolicy: {
+      policyType: 'Predefined'
+      policyName: 'AppGwSslPolicy2022010'
+    }
     frontendIPConfigurations: [
       {
         name: 'fip_pub'
