@@ -27,6 +27,9 @@ param isWAF bool = false
 param isE2ESSL bool = false
 param backendpoolIPAddresses array = []
 param nossl bool = false
+param pathmap bool = false
+param path string = '/path'
+param backendpoolpathIPAddresses array = []
 
 param tagValues object = {}
 
@@ -51,6 +54,12 @@ var backendAddressesFromFQDN = [
 ]
 
 var backendAddresses = (backendPoolFQDNs == []) ? backendAddressesFromIP : backendAddressesFromFQDN
+
+var pathbackendaddresses = [
+  for backendpoolpathIPAddress in backendpoolpathIPAddresses: {
+    ipAddress: backendpoolpathIPAddress
+  }
+]
 
 resource applicationGatewayWAF 'Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies@2023-11-01' = if (isWAF) {
   name: applicationGatewayWAF_Name
@@ -166,14 +175,25 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2022-11-01' =
         }
       }
     ]
-    backendAddressPools: [
+    backendAddressPools: (pathmap) ? [
       {
         name: 'backend_pool'
         properties: {
           backendAddresses: backendAddresses
         }
       }
-    ]
+      {
+        name: 'backend_pool_path'
+        properties: {
+          backendAddresses: pathbackendaddresses
+        }
+      }
+    ] : [      {
+      name: 'backend_pool'
+      properties: {
+        backendAddresses: backendAddresses
+      }
+    }]
     loadDistributionPolicies: []
     backendHttpSettingsCollection: [
       {
@@ -217,8 +237,52 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2022-11-01' =
       }
     ]
     listeners: []
-    urlPathMaps: []
-    requestRoutingRules: [
+    urlPathMaps: (pathmap) ? [
+      {
+        name: 'urlPathMap'
+        properties: {
+          defaultBackendAddressPool: {
+            id: resourceId('Microsoft.Network/applicationGateways/backendAddressPools', applicationGateway_Name, 'backend_pool')
+          }
+          defaultBackendHttpSettings: {
+            id: resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', applicationGateway_Name, 'http-settings')
+          }
+          defaultRedirectConfiguration: null
+          pathRules: [
+            {
+              name: 'pathRule'
+              properties: {
+                paths: [
+                  path
+                ]
+                backendAddressPool: {
+                  id: resourceId('Microsoft.Network/applicationGateways/backendAddressPools', applicationGateway_Name, 'backend_pool_path')
+                }
+                backendHttpSettings: {
+                  id: resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', applicationGateway_Name, 'http-settings')
+                }
+                redirectConfiguration: null
+              }
+            }
+          ]
+        }
+      }
+    ]:null
+    requestRoutingRules: (pathmap) ? [
+      {
+        name: (nossl) ? 'httproutingrule' : 'httpsroutingrule'
+        properties: {
+          ruleType: 'PathBasedRouting'
+          priority: 100
+          httpListener: {
+            id: httpListenerID
+          }
+          urlPathMap: {
+            id: resourceId('Microsoft.Network/applicationGateways/urlPathMaps', applicationGateway_Name, 'urlPathMap')
+          }
+        }
+      }
+    ] : [
       {
         name: (nossl) ? 'httproutingrule' : 'httpsroutingrule'
         properties: {

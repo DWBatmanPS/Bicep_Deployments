@@ -75,6 +75,11 @@ resource networkInterfaceWithPubIP 'Microsoft.Network/networkInterfaces@2022-09-
           publicIPAddress: { 
             id: publicIPAddress.id 
           }
+          loadBalancerBackendAddressPools: (addtoloadbalancer) ? [
+            {
+              id: resourceId('Microsoft.Network/loadBalancers/backendAddressPools', loadbalancername, 'bep')
+            }
+          ] : []
         }
       }
     ]

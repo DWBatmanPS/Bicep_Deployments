@@ -1,9 +1,14 @@
+param applicationGateWayName string = 'appgw'
+param publicIPAddressName string = 'appgw-vip'
 param virtualNetworkName string = 'appgw_vnet'
 param virtualNetworkPrefix string = '192.168.0.0/16'
 param subnet_Names array = [
+  'AGSubnet'
   'VMSubnet'
   'AzureBastionSubnet'
 ]
+param keyvault_managed_ID string
+param certname string
 param VMName string = 'WinServ2022'
 param VMSize string = 'Standard_D2s_v3'
 param VMAdminUsername string
@@ -13,9 +18,7 @@ param VMNICName string = 'VMNIC'
 param VMSubnetName string = 'VMSubnet'
 param vmscriptlocation string = 'https://raw.githubusercontent.com/Azure-Samples/windowsvm-custom-script-extension/master/vmextension/ConfigureRemotingForAnsible.ps1'
 param vmscriptfilename string = 'ConfigureRemotingForAnsible.ps1'
-param ILBDeployment string = 'InternalLoadBalancer'
-param publicipname string = 'NAT_Gateway_VIP'
-param natgatewayname string = 'NAT_Gateway'
+param keyVaultName string = 'DanWheelerVaultStr'
 
 module virtualNetwork '../../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
   name: virtualNetworkName
@@ -24,35 +27,54 @@ module virtualNetwork '../../../modules/Microsoft.Network/VirtualNetwork.bicep' 
     virtualNetwork_AddressPrefix: virtualNetworkPrefix
     subnet_Names: subnet_Names
     deployudr: false
-    deploy_NatGateway: true
-    publicipname: publicipname
-    natgatewayname: natgatewayname
   }
 }
 
+module appgw '../../../modules/Microsoft.Network/ApplicationGateway_v2.bicep' = {
+  name: applicationGateWayName
+  params: {
+    applicationGateway_Name: applicationGateWayName
+    applicationGateway_SubnetID: resourceId('Microsoft.Network/virtualNetworks/subnets', virtualNetworkName, 'AGSubnet')
+    publicIP_ApplicationGateway_Name: publicIPAddressName
+    keyVaultName: keyVaultName
+    keyvault_managed_ID: keyvault_managed_ID
+    certname: certname
+    isWAF: false
+    pathmap: true
+    path: '/path'
+    backendPoolFQDNs: []
+    backendpoolIPAddresses: [
+      '${VM.outputs.networkInterface_PrivateIPAddress}'
+    ]
+    backendpoolpathIPAddresses: [
+      '${VM2.outputs.networkInterface_PrivateIPAddress}'
+    ]
+    tagValues: {}
+  }
+  dependsOn: [
+    virtualNetwork
+  ]
+}
 
-module VM1 '../../../modules/Microsoft.Compute/WindowsServer2022/VirtualMachine.bicep' = {
-  name: 'VM1'
+module VM '../../../modules/Microsoft.Compute/WindowsServer2022/VirtualMachine.bicep' = {
+  name: 'VM'
   params: {
     acceleratedNetworking: true
-    virtualMachine_Name: '${VMName}-1'
+    virtualMachine_Name: VMName
     virtualMachine_AdminPassword: VMAdminPassword
     virtualMachine_AdminUsername: VMAdminUsername
     virtualMachine_Size: VMSize
     virtualMachine_ScriptFileLocation: vmscriptlocation
     virtualMachine_ScriptFileName: vmscriptfilename
-    networkInterface_Name:'${VMNICName}-1'
+    networkInterface_Name: VMNICName
     subnet_ID: resourceId('Microsoft.Network/virtualNetworks/subnets', virtualNetworkName, VMSubnetName)
     commandToExecute: 'powershell.exe -ExecutionPolicy Unrestricted -File ${vmscriptfilename}'
     addPublicIPAddress: false
     privateIPAllocationMethod: 'Dynamic'
-    addtoloadbalancer: true
-    loadbalancername: ILBDeployment
     tagValues: {}
   }
   dependsOn: [
     virtualNetwork
-    ILB
   ]
 }
 
@@ -71,23 +93,6 @@ module VM2 '../../../modules/Microsoft.Compute/WindowsServer2022/VirtualMachine.
     commandToExecute: 'powershell.exe -ExecutionPolicy Unrestricted -File ${vmscriptfilename}'
     addPublicIPAddress: false
     privateIPAllocationMethod: 'Dynamic'
-    addtoloadbalancer: true
-    loadbalancername: ILBDeployment
-    tagValues: {}
-  }
-  dependsOn: [
-    virtualNetwork
-    ILB
-  ]
-}
-
-module ILB '../../../modules/Microsoft.Network/InternalLoadBalancer.bicep' = {
-  name: ILBDeployment
-  params: {
-    internalLoadBalancer_Name: ILBDeployment
-    internalLoadBalancer_SubnetID: resourceId('Microsoft.Network/virtualNetworks/subnets', virtualNetworkName, VMSubnetName)
-    tcpPort: 80
-    enableTcpReset: true
     tagValues: {}
   }
   dependsOn: [

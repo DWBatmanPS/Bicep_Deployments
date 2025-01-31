@@ -120,12 +120,28 @@ if ($subleveldeployment) {
     Write-Host "`nStarting Bicep Deployment.  Process began at: $(Get-Date -Format "HH:mm K")`n"
 
     if ($Debuglog -eq $true) {
+        $DebugDeployment = $false
         Write-Host "Deployment Version: $DeploymentVersion"
         Write-Host "Location: $Location"
         Write-Host "Template File: $mainBicepFile"
         Write-Host "Parameter File: $mainParameterFile"
 
-        New-AzDeployment -name $DeploymentVersion -Location $Location -TemplateFile $mainBicepFile -TemplateParameterFile $mainParameterFile -DeploymentDebugLogLevel All
+        $response = Read-Host "You are starting a deployment with debug logging enabled. Debug logging can be verbose and may contain sensitive information. If you are running a deployment with sensitive information you should go and delete the resource deployment once you are finished with the logging. Do you want to continue? (Y/N)"
+
+        if ($response -eq "N") {
+            Write-Host "Deployment canceled."
+            return
+        }
+        elseif ($response -eq "Y") {
+            Write-Host "Starting deployment."
+            $DebugDeployment = $true
+            New-AzDeployment -name $DeploymentVersion -Location $Location -TemplateFile $mainBicepFile -TemplateParameterFile $mainParameterFile -DeploymentDebugLogLevel All
+        }
+        else {
+            Write-Host "Invalid response.  Canceling Deploment.."
+            return
+        }
+        
     }
     else {
             New-AzDeployment -name $DeploymentVersion -Location $Location -TemplateFile $mainBicepFile -TemplateParameterFile $mainParameterFile -AsJob
@@ -201,11 +217,27 @@ else{
     if ($DeployWithParamFile) {
 
         if ($Debuglog -eq $true) {
+            $DebugDeployment = $false
             Write-Host "Location: $Location"
             Write-Host "Template File: $mainBicepFile"
             Write-Host "Parameter File: $mainParameterFile"
 
-            New-AzResourceGroupDeployment -ResourceGroupName $rgName -TemplateFile $mainBicepFile -TemplateParameterFile $mainParameterFile -DeploymentDebugLogLevel All
+            $response = Read-Host "You are starting a deployment with debug logging enabled. Debug logging can be verbose and may contain sensitive information. If you are running a deployment with sensitive information you should go and delete the resource deployment once you are finished with the logging. Do you want to continue? (Y/N)"
+
+            if ($response -eq "N") {
+                Write-Host "Deployment canceled."
+                return
+            }
+            elseif ($response -eq "Y") {
+                Write-Host "Starting deployment."
+                $DebugDeployment = $true
+                New-AzResourceGroupDeployment -ResourceGroupName $rgName -TemplateFile $mainBicepFile -TemplateParameterFile $mainParameterFile -DeploymentDebugLogLevel All
+            }
+            else {
+                Write-Host "Invalid response.  Canceling Deploment.."
+                return
+            }
+            
         }
         else {
             New-AzResourceGroupDeployment -ResourceGroupName $rgName -TemplateFile $mainBicepFile -TemplateParameterFile $mainParameterFile
@@ -214,14 +246,28 @@ else{
     }
     else {
         if ($Debuglog -eq $true) {
+            $DebugDeployment = $true
             Write-Host "Location: $Location"
             Write-Host "Template File: $mainBicepFile"
-            Write-Host "Parameter File: $mainParameterFile"
 
-            New-AzResourceGroupDeployment -ResourceGroupName $rgName -TemplateFile $mainBicepFile -TemplateParameterFile $mainParameterFile -DeploymentDebugLogLevel All
+            $response = Read-Host "You are starting a deployment with debug logging enabled. Debug logging can be verbose and may contain sensitive information. If you are running a deployment with sensitive information you should go and delete the resource deployment once you are finished with the logging. Do you want to continue? (Y/N)"
+
+            if ($response -eq "N") {
+                Write-Host "Deployment canceled."
+                return
+            }
+            elseif ($response -eq "Y") {
+                Write-Host "Starting deployment."
+                $DebugDeployment = $true
+                New-AzResourceGroupDeployment -ResourceGroupName $rgName -TemplateFile $mainBicepFile -DeploymentDebugLogLevel All
+            }
+            else {
+                Write-Host "Invalid response.  Canceling Deploment.."
+                return
+            }
         }
         else {
-            New-AzResourceGroupDeployment -ResourceGroupName $rgName -TemplateFile $mainBicepFile -TemplateParameterFile $mainParameterFile
+            New-AzResourceGroupDeployment -ResourceGroupName $rgName -TemplateFile $mainBicepFile
         }
         
     }
@@ -231,6 +277,26 @@ $stopwatch.Stop()
 
 Write-Host "Process finished at: $(Get-Date -Format "HH:mm K")"
 Write-Host "Total time taken in minutes: $($stopwatch.Elapsed.TotalMinutes)"
+
+if ($Debuglog -eq $true) {
+    $emphasizedText = @"
+*********************************************************************************************
+*********************************************************************************************
+*********************************************************************************************
+*********************************************************************************************
+**                                                                                         **
+**                             DEBUG LOGGING IS ENABLED!                                   **
+**                                                                                         **
+**     Please remember to delete the deployment once you are finished with the logging.    **
+**                                                                                         **
+*********************************************************************************************
+*********************************************************************************************
+*********************************************************************************************
+*********************************************************************************************
+"@ | Out-String
+
+    Write-Host -ForegroundColor Yellow -BackgroundColor Black $emphasizedText
+}
 
 if ($subleveldeployment) {}
 else {
