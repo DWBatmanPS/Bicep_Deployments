@@ -152,7 +152,7 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2022-11-01' =
     sslProfiles: []
     sslPolicy: {
       policyType: 'Predefined'
-      policyName: 'AppGwSslPolicy2022010'
+      policyName: 'AppGwSslPolicy20220101'
     }
     frontendIPConfigurations: [
       {

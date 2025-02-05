@@ -73,7 +73,7 @@ module VM '../../../modules/Microsoft.Compute/WindowsServer2022/VirtualMachine.b
   ]
 }
 
-module bastion '../../../modules/Microsoft.Network/Bastion.bicep' = {
+/* module bastion '../../../modules/Microsoft.Network/Bastion.bicep' = {
   name: 'bastion'
   params: {
     bastion_name: 'bastion'
@@ -84,3 +84,4 @@ module bastion '../../../modules/Microsoft.Network/Bastion.bicep' = {
     virtualNetwork
   ]
 }
+ */

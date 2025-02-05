@@ -250,7 +250,7 @@ resource publicip 'Microsoft.Network/publicIPAddresses@2021-05-01' = {
   }
 }
 
-resource natgateway 'Microsoft.Network/natGateways@2021-05-01' = {
+resource natgateway 'Microsoft.Network/natGateways@2021-05-01' = if (deploy_NatGateway){
   name: natgatewayname
   location: resourceGroup().location
   sku: {

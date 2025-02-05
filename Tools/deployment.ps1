@@ -144,7 +144,7 @@ if ($subleveldeployment) {
         
     }
     else {
-            New-AzDeployment -name $DeploymentVersion -Location $Location -TemplateFile $mainBicepFile -TemplateParameterFile $mainParameterFile -AsJob
+            New-AzDeployment -name $DeploymentVersion -Location $Location -TemplateFile $mainBicepFile -TemplateParameterFile $mainParameterFile
 
     }
     #Write-Host "The deployment can be monitored by navigating to the URL below: "
@@ -231,7 +231,7 @@ else{
             elseif ($response -eq "Y") {
                 Write-Host "Starting deployment."
                 $DebugDeployment = $true
-                New-AzResourceGroupDeployment -ResourceGroupName $rgName -TemplateFile $mainBicepFile -TemplateParameterFile $mainParameterFile -DeploymentDebugLogLevel All
+                New-AzResourceGroupDeployment -ResourceGroupName $rgName -TemplateFile $mainBicepFile -TemplateParameterFile $mainParameterFile -DeploymentDebugLogLevel All -AsJob
             }
             else {
                 Write-Host "Invalid response.  Canceling Deploment.."
