@@ -18,7 +18,21 @@ param VMNICName string = 'VMNIC'
 param VMSubnetName string = 'VMSubnet'
 param vmscriptlocation string = 'https://raw.githubusercontent.com/Azure-Samples/windowsvm-custom-script-extension/master/vmextension/ConfigureRemotingForAnsible.ps1'
 param vmscriptfilename string = 'ConfigureRemotingForAnsible.ps1'
-param keyVaultName string = 'DanWheelerVaultStr'
+param keyVaultName string = 'danwheelerappgwvault'
+param virtualNetwork2Name string = 'azfw_vnet'
+param virtualNetwork2Prefix string = '10.0.0.0/16'
+param subnet_Names2 array = [
+  'AzureFirewallSubnet'
+]
+param policyname string = 'azfwpolicy'
+param dnsenabled bool = true
+param azfwsku string = 'Standard'
+param learnprivaterages string = 'Enabled'
+param azfw string = 'dnsazfw'
+param useForceTunneling bool = false
+param keyvaultmanagedidentity_name string = 'appgecertretrieval'
+
+var azfwsubnetid = resourceId('Microsoft.Network/virtualNetworks/subnets', virtualNetwork2Name, 'AzureFirewallSubnet')
 
 module virtualNetwork '../../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
   name: virtualNetworkName
@@ -27,28 +41,76 @@ module virtualNetwork '../../../modules/Microsoft.Network/VirtualNetwork.bicep' 
     virtualNetwork_AddressPrefix: virtualNetworkPrefix
     subnet_Names: subnet_Names
     deployudr: false
+    deploy_NatGateway: true
+    natgatewayname: 'dnscomplexnatgw'
+    publicipname: 'dnscomplexnatgw-pip'
   }
 }
 
-module appgw '../../../modules/Microsoft.Network/Application_Gateway_v2_rewrites_template.bicep' = {
+module virtualNetwork2 '../../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
+  name: virtualNetwork2Name
+  params: {
+    virtualNetwork_Name: virtualNetwork2Name
+    virtualNetwork_AddressPrefix: virtualNetwork2Prefix
+    subnet_Names: subnet_Names2
+    deployudr: false
+    deploy_NatGateway: false
+  }
+}
+
+resource Keyvault_ManagedID 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
+  name: keyvaultmanagedidentity_name
+  location: resourceGroup().location
+  tags: {
+  }
+}
+
+module keyvault '../../../modules/Microsoft.Keyvault/keyvault_with_managedID.bicep' = {
+  name: 'keyvault'
+  params: {
+    keyVaultName: keyVaultName
+    kvsecretofficerrole: 'Key Vault Secrets Officer'
+    kvsecretuserrole: 'Key Vault Secrets User'
+    managedidentity_name:keyvaultmanagedidentity_name
+  }
+}
+
+module azfwpolicy '../../../modules/Microsoft.Network/AZFWPolicy.bicep' = {
+  name: policyname
+  params: {
+    policyname: policyname
+    dnsenabled: dnsenabled
+    azfwsku: azfwsku
+    learnprivaterages: learnprivaterages
+  }
+}
+
+module azfwdeploy '../../../modules/Microsoft.Network/AzureFirewall.bicep' = {
+  name: azfw
+  params: {
+    azureFirewall_Name: azfw
+    azureFirewallPolicy_ID: azfwpolicy.outputs.firewallpolicyid
+    azureFirewall_Subnet_ID: azfwsubnetid
+    azureFirewall_SKU: azfwsku
+    useForceTunneling: useForceTunneling
+  }
+  dependsOn: [
+    virtualNetwork2
+  ]
+}
+module appgw '../../../modules/Microsoft.Network/Appgw_v2_incomplete.bicep' = {
   name: applicationGateWayName
   params: {
     applicationGateway_Name: applicationGateWayName
     applicationGateway_SubnetID: resourceId('Microsoft.Network/virtualNetworks/subnets', virtualNetworkName, 'AGSubnet')
     publicIP_ApplicationGateway_Name: publicIPAddressName
-    keyVaultName: keyVaultName
     keyvault_managed_ID: keyvault_managed_ID
-    certname: certname
     isWAF: false
-    pathmap: true
-    path: '/path'
     backendPoolFQDNs: []
     backendpoolIPAddresses: [
       '${VM.outputs.networkInterface_PrivateIPAddress}'
     ]
-    backendpoolpathIPAddresses: [
-      '${VM2.outputs.networkInterface_PrivateIPAddress}'
-    ]
+    nossl: true
     tagValues: {}
   }
   dependsOn: [
@@ -69,29 +131,7 @@ module VM '../../../modules/Microsoft.Compute/WindowsServer2022/VirtualMachine.b
     networkInterface_Name: VMNICName
     subnet_ID: resourceId('Microsoft.Network/virtualNetworks/subnets', virtualNetworkName, VMSubnetName)
     commandToExecute: 'powershell.exe -ExecutionPolicy Unrestricted -File ${vmscriptfilename}'
-    addPublicIPAddress: false
-    privateIPAllocationMethod: 'Dynamic'
-    tagValues: {}
-  }
-  dependsOn: [
-    virtualNetwork
-  ]
-}
-
-module VM2 '../../../modules/Microsoft.Compute/WindowsServer2022/VirtualMachine.bicep' = {
-  name: 'VM2'
-  params: {
-    acceleratedNetworking: true
-    virtualMachine_Name: '${VMName}-2'
-    virtualMachine_AdminPassword: VMAdminPassword
-    virtualMachine_AdminUsername: VMAdminUsername
-    virtualMachine_Size: VMSize
-    virtualMachine_ScriptFileLocation: vmscriptlocation
-    virtualMachine_ScriptFileName: vmscriptfilename
-    networkInterface_Name: '${VMNICName}-2'
-    subnet_ID: resourceId('Microsoft.Network/virtualNetworks/subnets', virtualNetworkName, VMSubnetName)
-    commandToExecute: 'powershell.exe -ExecutionPolicy Unrestricted -File ${vmscriptfilename}'
-    addPublicIPAddress: false
+    addPublicIPAddress: true
     privateIPAllocationMethod: 'Dynamic'
     tagValues: {}
   }

@@ -47,14 +47,8 @@ param customlocation string = 'eastus'
 
 var location = (UsecustomLocation) ? customlocation: resourceGroup().location
 var baseAddress = split(virtualNetwork_AddressPrefix, '/')[0]
-var baseOctets = [int (split(baseAddress, '.')[0]), int(split(baseAddress, '.')[1]), int (split(baseAddress, '.')[2]), int (split(baseAddress, '.')[3])]
+var baseOctets = split(baseAddress, '.')
 
-var subnetAddressPrefixes = [
-  for (subnet_Name, index) in subnet_Names: {
-    name: subnet_Name
-    addressPrefix: '${baseOctets[0]}.${baseOctets[1]}.${baseOctets[2] + 1}.0/24'
-  }
-]
 
 resource virtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' = {
   name: virtualNetwork_Name
@@ -70,9 +64,9 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' = {
     }
     subnets: [
       for (subnet_Name, index) in subnet_Names: {
-        name: subnetAddressPrefixes[index].name
+        name: subnet_Name
         properties: {
-          addressPrefix: subnetAddressPrefixes[index].addressPrefix
+          addressPrefix: '${baseOctets[0]}.${baseOctets[1]}.${index}.0/24'
           networkSecurityGroup: (subnet_Name != 'AGCSubnet' && subnet_Name != 'AzureFirewallSubnet' && subnet_Name != 'AzureFirewallManagementSubnet' && subnet_Name != 'GatewaySubnet' && subnet_Name != 'AGSubnet' && subnet_Name != 'AzureBastionSubnet' && subnet_Name != 'AKSSubnet') ? {
             id: networkSecurityGroup.id
           } : null
@@ -138,6 +132,27 @@ resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2022-09-0
           ]
         }
       }
+      /* {
+        id: resourceId('Microsoft.Network/networkSecurityGroups/securityRules', networkSecurityGroup_Default_Name, 'AllowCorp')
+        name: 'AllowCorp'
+        properties: {
+          description: 'Allow corp and saw inbound'
+          protocol: '*'
+          sourcePortRange: '*'
+          sourceAddressPrefixes: [
+            'CorpNetPublic'
+            'CorpNetSaw'
+          ]
+          destinationAddressPrefix: 'VirtualNetwork'
+          access: 'Allow'
+          priority: 101
+          direction: 'Inbound'
+          destinationPortRanges: [
+            '22'
+            '3389'
+          ]
+        }
+      } */
       {
         id: resourceId('Microsoft.Network/networkSecurityGroups/securityRules', networkSecurityGroup_Default_Name, 'Allow443inbound')
         name: 'Allow443inbound'
@@ -252,11 +267,70 @@ resource natgateway 'Microsoft.Network/natGateways@2021-05-01' = if (deploy_NatG
     ]
   }
 }
+// resource networkSecurityGroup_ApplicationGateway_AppGWSpecificRule 'Microsoft.Network/networkSecurityGroups/securityRules@2022-11-01' = {
+//   parent: networkSecurityGroup_ApplicationGateway
+//   name: 'AllowGatewayManager'
+//   properties: {
+//     description: 'Allow GatewayManager'
+//     protocol: '*'
+//     sourcePortRange: '*'
+//     destinationPortRange: '65200-65535'
+//     sourceAddressPrefix: 'GatewayManager'
+//     destinationAddressPrefix: '*'
+//     access: 'Allow'
+//     priority: 1000
+//     direction: 'Inbound'
+//     sourcePortRanges: []
+//     destinationPortRanges: []
+//     sourceAddressPrefixes: []
+//     destinationAddressPrefixes: []
+//   }
+// }
+
+// resource networkSecurityGroup_ApplicationGateway_HTTPSRule 'Microsoft.Network/networkSecurityGroups/securityRules@2022-11-01' = {
+//   parent: networkSecurityGroup_ApplicationGateway
+//   name: 'AllowHTTPS'
+//   properties: {
+//     description: 'Allow HTTPS'
+//     protocol: 'Tcp'
+//     sourcePortRange: '*'
+//     destinationPortRange: '443'
+//     sourceAddressPrefix: '*'
+//     destinationAddressPrefix: '*'
+//     access: 'Allow'
+//     priority: 1001
+//     direction: 'Inbound'
+//     sourcePortRanges: []
+//     destinationPortRanges: []
+//     sourceAddressPrefixes: []
+//     destinationAddressPrefixes: []
+//   }
+// }
+
+// resource networkSecurityGroupRule 'Microsoft.Network/networkSecurityGroups/securityRules@2022-09-01' = {
+//   parent: networkSecurityGroup
+//   name: networkSecurityGroup_Default_RuleName
+//   properties: {
+//     description: 'test'
+//     protocol: '*'
+//     sourcePortRange: '*'
+//     destinationPortRange: '8080'
+//     sourceAddressPrefix: '10.0.0.1/32'
+//     destinationAddressPrefix: '*'
+//     access: 'Allow'
+//     priority: int(networkSecurityGroup_Default_RulePriority)
+//     direction: 'Inbound'
+//     sourcePortRanges: []
+//     destinationPortRanges: []
+//     sourceAddressPrefixes: []
+//     destinationAddressPrefixes: []
+//   }
+// }
 
 output virtualNetwork_Name string = virtualNetwork.name
 output virtualNetwork_ID string = virtualNetwork.id
 output virtualNetwork_AddressPrefix string = virtualNetwork.properties.addressSpace.addressPrefixes[0]
-output subnets array = virtualNetwork.properties.subnets
+
 output routeTable_Name string = routeTable.name
 output routeTable_ID string = routeTable.id
 

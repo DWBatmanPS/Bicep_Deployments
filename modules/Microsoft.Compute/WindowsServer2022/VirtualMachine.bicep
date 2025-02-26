@@ -26,11 +26,11 @@ param subnet_ID string
 
 @description('''Location of the file to be ran while the Virtual Machine is being created.  Ensure that the path ends with a /
 Example: https://example.com/scripts/''')
-param virtualMachine_ScriptFileLocation string
+param virtualMachine_ScriptFileLocation string = ''
 
 @description('''Name of the file to be ran while the Virtual Machine is being created
 Example: WinServ2022_ConfigScript_General.ps1''')
-param virtualMachine_ScriptFileName string
+param virtualMachine_ScriptFileName string = ''
 
 @description('Joins the file path and the file name together')
 var virtualMachine_ScriptFileUri = '${virtualMachine_ScriptFileLocation}${virtualMachine_ScriptFileName}'
@@ -39,7 +39,7 @@ var virtualMachine_ScriptFileUri = '${virtualMachine_ScriptFileLocation}${virtua
 Example:
 'powershell.exe -ExecutionPolicy Unrestricted -File <file name.ps1>'
 ''')
-param commandToExecute string
+param commandToExecute string = ''
 
 @description('Adds a Public IP to the Network Interface of the Virtual Machine')
 param addPublicIPAddress bool = false
@@ -59,11 +59,15 @@ param addtoloadbalancer bool = false
 param loadbalancername string = ''
 
 param tagValues object = {}
+param UsecustomLocation bool = false
+param customlocation string = 'eastus'
 
+var location = (UsecustomLocation) ? customlocation: resourceGroup().location
 
 module networkInterface '../../Microsoft.Network/NetworkInterface.bicep' = {
   name: networkInterface_Name
   params: {
+    location: location
     acceleratedNetworking: acceleratedNetworking
     networkInterface_Name: networkInterface_Name
     subnet_ID: subnet_ID
@@ -78,7 +82,7 @@ module networkInterface '../../Microsoft.Network/NetworkInterface.bicep' = {
 
 resource virtualMachine_Windows 'Microsoft.Compute/virtualMachines@2022-11-01' = {
   name: virtualMachine_Name
-  location: resourceGroup().location
+  location: location
   identity: {
     type: 'SystemAssigned'
   }
@@ -148,7 +152,7 @@ resource virtualMachine_Windows 'Microsoft.Compute/virtualMachines@2022-11-01' =
 resource virtualMachine_NetworkWatcherExtension 'Microsoft.Compute/virtualMachines/extensions@2022-11-01' = {
   parent: virtualMachine_Windows
   name: 'AzureNetworkWatcherExtension'
-  location: resourceGroup().location
+  location: location
   properties: {
     autoUpgradeMinorVersion: true
     publisher: 'Microsoft.Azure.NetworkWatcher'
@@ -161,7 +165,7 @@ resource virtualMachine_NetworkWatcherExtension 'Microsoft.Compute/virtualMachin
 resource virtualMachine_CustomScriptExtension 'Microsoft.Compute/virtualMachines/extensions@2021-11-01' = if (virtualMachine_ScriptFileName != '') {
   parent: virtualMachine_Windows
   name: 'installcustomscript'
-  location: resourceGroup().location
+  location: location
   properties: {
     publisher: 'Microsoft.Compute'
     type: 'CustomScriptExtension'

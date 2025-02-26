@@ -1,6 +1,8 @@
 @description('Name of the Virtual Machines Network Interface')
 param networkInterface_Name string
 
+param location string = resourceGroup().location
+
 @description('True enables Accelerated Networking and False disabled it.  Not all virtualMachine sizes support Accel Net')
 param acceleratedNetworking bool
 
@@ -28,7 +30,7 @@ param tagValues object = {}
 
 resource networkInterfaceWithoutPubIP 'Microsoft.Network/networkInterfaces@2022-09-01' = if (!addPublicIPAddress) {
   name: networkInterface_Name
-  location: resourceGroup().location
+  location: location
   properties: {
     ipConfigurations: [
       {
@@ -59,7 +61,7 @@ resource networkInterfaceWithoutPubIP 'Microsoft.Network/networkInterfaces@2022-
 
 resource networkInterfaceWithPubIP 'Microsoft.Network/networkInterfaces@2022-09-01' = if (addPublicIPAddress) {
   name: networkInterface_Name
-  location: resourceGroup().location
+  location: location
   properties: {
     ipConfigurations: [
       {
@@ -93,7 +95,7 @@ resource networkInterfaceWithPubIP 'Microsoft.Network/networkInterfaces@2022-09-
 
 resource publicIPAddress 'Microsoft.Network/publicIPAddresses@2023-06-01' = if (addPublicIPAddress) {
   name: '${networkInterface_Name}_PIP'
-  location: resourceGroup().location
+  location: location
   sku: {
     name: 'Standard'
     tier: 'Regional'

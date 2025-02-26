@@ -8,8 +8,9 @@ param enabledForTemplateDeployment bool = false
 param tenantId string = subscription().tenantId
 param skuName string = 'standard'
 param rbacAuthorization bool = true
-param Keyvault_ManagedID string
-param Automation_ManagedID string
+param Automation_ManagedID string = ''
+param deployautomation bool = false
+param managedidentity_name string
 
 resource kv 'Microsoft.KeyVault/vaults@2023-07-01' = {
   name: keyVaultName
@@ -33,17 +34,19 @@ resource kv 'Microsoft.KeyVault/vaults@2023-07-01' = {
   }
 }
 
-resource keyvault_secretuser 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
-  name: guid(kvsecretuserrole)
-  scope: kv
-  properties: {
-    principalId: Keyvault_ManagedID
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '4633458b-17de-408a-b874-0445c86b69e6')
-    principalType: 'ServicePrincipal'
+module keyvaultauthorization '../Microsoft.Authorization/secret_user.bicep' = {
+  name: 'keyvaultauth'
+  params: {
+    keyVaultName: keyVaultName
+    kvsecretuserrole: kvsecretuserrole
+    managedidentity_name: managedidentity_name
   }
+  dependsOn: [
+    kv
+  ]
 }
 
-resource automation_user 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+resource automation_user 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = if (deployautomation) {
   name: guid(kvsecretofficerrole)
   scope: kv
   properties: {
