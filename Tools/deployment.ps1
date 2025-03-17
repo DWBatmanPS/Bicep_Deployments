@@ -135,7 +135,11 @@ if ($subleveldeployment) {
         elseif ($response -eq "Y") {
             Write-Host "Starting deployment."
             $DebugDeployment = $true
-            New-AzDeployment -name $DeploymentVersion -Location $Location -TemplateFile $mainBicepFile -TemplateParameterFile $mainParameterFile -DeploymentDebugLogLevel All
+            $job = Start-Job -ScriptBlock { 
+                param($DeploymentVersion, $Location, $mainBicepFile, $mainParameterFile)  New-AzDeployment -name $DeploymentVersion -Location $Location -TemplateFile $mainBicepFile -TemplateParameterFile $mainParameterFile -DeploymentDebugLogLevel All }-ArgumentList $$DeploymentVersion, $Location, $mainBicepFile, $mainParameterFile
+                $JobID = $Job.Id
+                $job | Wait-Job
+                Receive-Job -Id $JobID | Out-File ${deploymentFilePath}\src\debuglog.txt
         }
         else {
             Write-Host "Invalid response.  Canceling Deploment.."
@@ -221,6 +225,8 @@ else{
             Write-Host "Location: $Location"
             Write-Host "Template File: $mainBicepFile"
             Write-Host "Parameter File: $mainParameterFile"
+            Write-Host "Resource Group: $rgName"
+            Write-Host "Deployment Version: $DeploymentVersion"
 
             $response = Read-Host "You are starting a deployment with debug logging enabled. Debug logging can be verbose and may contain sensitive information. If you are running a deployment with sensitive information you should go and delete the resource deployment once you are finished with the logging. Do you want to continue? (Y/N)"
 
@@ -231,7 +237,12 @@ else{
             elseif ($response -eq "Y") {
                 Write-Host "Starting deployment."
                 $DebugDeployment = $true
-                New-AzResourceGroupDeployment -ResourceGroupName $rgName -TemplateFile $mainBicepFile -TemplateParameterFile $mainParameterFile -DeploymentDebugLogLevel All -AsJob
+                $job = Start-Job -ScriptBlock {
+                    param($rgName, $mainBicepFile, $mainParameterFile) New-AzResourceGroupDeployment -ResourceGroupName $rgName -TemplateFile $mainBicepFile -TemplateParameterFile $mainParameterFile -DeploymentDebugLogLevel "All" -Verbose
+            } -ArgumentList $rgName, $mainBicepFile, $mainParameterFile
+                $JobID = $Job.Id
+                $job | Wait-Job
+                Receive-Job -Id $JobID | Out-File ${deploymentFilePath}\src\debuglog.txt
             }
             else {
                 Write-Host "Invalid response.  Canceling Deploment.."
@@ -259,7 +270,13 @@ else{
             elseif ($response -eq "Y") {
                 Write-Host "Starting deployment."
                 $DebugDeployment = $true
-                New-AzResourceGroupDeployment -ResourceGroupName $rgName -TemplateFile $mainBicepFile -DeploymentDebugLogLevel All
+                New-AzResourceGroupDeployment -ResourceGroupName $rgName -TemplateFile $mainBicepFile -DeploymentDebugLogLevel "All"
+                $job = Start-Job -ScriptBlock {
+                    param($rgName, $mainBicepFile)
+                    New-AzResourceGroupDeployment -ResourceGroupName $rgName -TemplateFile $mainBicepFile -DeploymentDebugLogLevel "All" -Verbose } -ArgumentList $rgName, $mainBicepFile
+                $JobID = $Job.Id
+                $job | Wait-Job
+                Receive-Job -Id $JobID | Out-File ${deploymentFilePath}\src\debuglog.txt
             }
             else {
                 Write-Host "Invalid response.  Canceling Deploment.."

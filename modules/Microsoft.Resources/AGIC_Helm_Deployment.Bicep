@@ -63,6 +63,9 @@ param ClientID string
 
 param DeployName string = 'agic-controller'
 
+param shared string = 'false'
+param subResourceNamePrefix string = ''
+
 var location = resourceGroup().location
 var useExistingManagedIdentity = newOrExistingManagedIdentity == 'existing'
 var managedIdentityName = 'id-AksRunCommandProxy-${location}'
@@ -129,6 +132,8 @@ resource runAksCommand 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
       { name: 'ClientID', value: ClientID}
       { name: 'DeployName', value: DeployName}
       { name: 'verbosityLevel', value: '5'}
+      { name: 'subResourceNamePrefix', value: subResourceNamePrefix}
+      { name: 'shared', value: shared}
     ]
     scriptContent: loadTextContent('../../scripts/agic-aks-run-command-file.sh')
     cleanupPreference: cleanupPreference

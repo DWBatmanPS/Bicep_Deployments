@@ -3,6 +3,9 @@
     "Name": "WAF-Policy-Only"
   },
   {
+    "Name": "Windows_IIS_with_ILB"
+  },
+  {
     "Name": "NVA_Lab"
   },
   {
@@ -33,10 +36,10 @@
     "Name": "appgwWAFtoPolicy"
   },
   {
-    "Name": "Windows_IIS_with_ILB"
+    "Name": "AFDx_Premium_WAF"
   },
   {
-    "Name": "AFDx_Premium_WAF"
+    "Name": "VWAN_Lab"
   },
   {
     "Name": "AGIC_StandalonePowershell"
@@ -69,6 +72,9 @@
     "Name": "netisolationappgw_complexdnslab"
   },
   {
-    "Name": "VWAN_Lab"
+    "Name": "project_sneaky"
+  },
+  {
+    "Name": "MultipleAKSClst-AGIC"
   }
 ]

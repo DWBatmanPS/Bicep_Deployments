@@ -21,12 +21,16 @@ fi
 helmValuesFileName="$(dirname "$0")/helmvalues.yaml"
 
 echo "Creating Helm values file..."
-cat <<EOF > $helmValuesFileName
+
+if [ -f $shared eq "true" ]
+then
+    cat <<EOF > $helmValuesFileName
 appgw:
   name: '${AppgwID}'
   resourceGroup: '${RG}'
   subscriptionId: '${subscriptionID}'
-  shared: false
+  subResourceNamePrefix: '${subResourceNamePrefix}'
+  shared: ${shared}
 armAuth:
   type: workloadIdentity
   identityClientID: '${ClientID}'
@@ -34,6 +38,23 @@ rbac:
   enabled: true
 verbosityLevel: '${verbosityLevel}'
 EOF
+else
+    cat <<EOF > $helmValuesFileName
+appgw:
+  name: '${AppgwID}'
+  resourceGroup: '${RG}'
+  subscriptionId: '${subscriptionID}'
+  shared: ${shared}
+armAuth:
+  type: workloadIdentity
+  identityClientID: '${ClientID}'
+rbac:
+  enabled: true
+verbosityLevel: '${verbosityLevel}'
+EOF
+fi
+
+
 
 #echo -n $helmAppValues | base64 -d > $helmValuesFileName
 echo "Helm values file created and stored at $helmValuesFileName"

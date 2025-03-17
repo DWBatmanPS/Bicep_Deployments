@@ -41,10 +41,11 @@ module vnet_module '../../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
     dnsServers: dnsServers
     virtualNetwork_AddressPrefix: virtualNetwork_AddressPrefix
     subnet_Names: subnet_Names
+    deployudr: false
   }
 }
 
-/* module agc_module '../../../modules/Microsoft.ServiceNetworking/appgw_for_containers.bicep' = {
+module agc_module '../../../modules/Microsoft.ServiceNetworking/appgw_for_containers.bicep' = {
   name: AGCname
   params: {
     FrontendName: 'agcFrontend'
@@ -56,7 +57,7 @@ module vnet_module '../../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
   dependsOn: [
     vnet_module
   ]
-} */
+} 
 
 module aks_module '../../../modules/Microsoft.ContainerService/aks_cluster.bicep' = {
   name: 'aks_deployment'
@@ -86,9 +87,6 @@ module managed_identity '../../../modules/Microsoft.ManagedIdentity/managed_ID_a
     aks_oidc_issuer: aks_module.outputs.aks_oidc_issuer
     federated_id_subject: federated_id_subject
   }
-  dependsOn: [
-    aks_module
-  ]
 }
 
 module authorizations '../../../modules/Microsoft.Authorization/agc_roles.bicep' = {
@@ -100,7 +98,6 @@ module authorizations '../../../modules/Microsoft.Authorization/agc_roles.bicep'
   dependsOn: [
     resourceGroup()
     managed_identity
-    randomstring1
   ]
 }
 
@@ -132,7 +129,6 @@ module net_authorizations '../../../modules/Microsoft.Authorization/net_contrib_
   dependsOn: [
     resourceGroup()
     managed_identity
-    randomstring2
     authorizations
     vnet_module
     Sleep

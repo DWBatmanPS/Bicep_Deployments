@@ -52,7 +52,7 @@ var baseOctets = [int (split(baseAddress, '.')[0]), int(split(baseAddress, '.')[
 var subnetAddressPrefixes = [
   for (subnet_Name, index) in subnet_Names: {
     name: subnet_Name
-    addressPrefix: '${baseOctets[0]}.${baseOctets[1]}.${baseOctets[2] + 1}.0/24'
+    addressPrefix: '${baseOctets[0]}.${baseOctets[1]}.${baseOctets[2] + index}.0/24'
   }
 ]
 
