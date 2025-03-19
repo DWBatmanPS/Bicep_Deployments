@@ -73,9 +73,11 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' = {
         name: subnetAddressPrefixes[index].name
         properties: {
           addressPrefix: subnetAddressPrefixes[index].addressPrefix
-          networkSecurityGroup: (subnet_Name != 'AGCSubnet' && subnet_Name != 'AzureFirewallSubnet' && subnet_Name != 'AzureFirewallManagementSubnet' && subnet_Name != 'GatewaySubnet' && subnet_Name != 'AGSubnet' && subnet_Name != 'AzureBastionSubnet' && subnet_Name != 'AKSSubnet') ? {
+          networkSecurityGroup: (subnet_Name != 'AGCSubnet' && subnet_Name != 'AzureFirewallSubnet' && subnet_Name != 'AzureFirewallManagementSubnet' && subnet_Name != 'GatewaySubnet' && subnet_Name != 'AGSubnet' && subnet_Name != 'AzureBastionSubnet' && subnet_Name != 'AKSSubnet') ? (subnet_Name == 'AGSubnet') ?{
             id: networkSecurityGroup.id
-          } : null
+          } : {
+            id:networkSecurityGroup_ApplicationGateway.id
+          }: null
           routeTable: (deployudr && (subnet_Name != 'AzureFirewallSubnet' && subnet_Name != 'AzureFirewallManagementSubnet' && subnet_Name != 'GatewaySubnet' && subnet_Name != 'AGCSubnet' && subnet_Name != 'AGSubnet' && subnet_Name != 'AzureBastionSubnet' && subnet_Name != 'NVATrust' && subnet_Name != 'NVAUntrust' && subnet_Name != 'NVAMgmt')) ? {
             id: routeTable.id
           } : null
@@ -139,6 +141,24 @@ resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2022-09-0
         }
       }
       {
+        id: resourceId('Microsoft.Network/networkSecurityGroups/securityRules', networkSecurityGroup_Default_Name, 'AllowCustomInbound')
+        name: 'AllowCustomhttphttpsInbound'
+        properties: {
+          description: 'Allow Custom HTTP and HTTPS Inbound'
+          protocol: '*'
+          sourcePortRange: '*'
+          sourceAddressPrefix: customsourceaddresscidr
+          destinationAddressPrefix: 'VirtualNetwork'
+          access: 'Allow'
+          priority: 101
+          direction: 'Inbound'
+          destinationPortRanges: [
+            '80'
+            '443'
+          ]
+        }
+      }
+      {
         id: resourceId('Microsoft.Network/networkSecurityGroups/securityRules', networkSecurityGroup_Default_Name, 'Allow443inbound')
         name: 'Allow443inbound'
         properties: {
@@ -171,6 +191,23 @@ resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2022-09-0
           destinationPortRanges: []
           sourceAddressPrefixes: []
           destinationAddressPrefixes: []
+        }
+      }
+      {
+        id: resourceId('Microsoft.Network/networkSecurityGroups/securityRules', networkSecurityGroup_Default_Name, 'AllowHttpInboundlocal')
+        name: 'AllowHttpInboundlocal'
+        properties: {
+          description: 'Allow Http Inbound'
+          protocol: '*'
+          sourcePortRange: '*'
+          sourceAddressPrefix: 'VirtualNetwork'
+          destinationAddressPrefix: 'VirtualNetwork'
+          access: 'Allow'
+          priority: 1004
+          direction: 'Inbound'
+          destinationPortRanges: [
+            '80'
+          ]
         }
       }
     ]
@@ -212,6 +249,42 @@ resource networkSecurityGroup_ApplicationGateway 'Microsoft.Network/networkSecur
           destinationAddressPrefix: '*'
           access: 'Allow'
           priority: 1001
+          direction: 'Inbound'
+          sourcePortRanges: []
+          destinationPortRanges: []
+          sourceAddressPrefixes: []
+          destinationAddressPrefixes: []
+        }
+      }
+      {
+        name: 'AllowHTTPlocal'
+        properties: {
+          description: 'Allow HTTP from local'
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          destinationPortRange: '80'
+          sourceAddressPrefix: 'VirtualNetwork'
+          destinationAddressPrefix: '*'
+          access: 'Allow'
+          priority: 1002
+          direction: 'Inbound'
+          sourcePortRanges: []
+          destinationPortRanges: []
+          sourceAddressPrefixes: []
+          destinationAddressPrefixes: []
+        }
+      }
+      {
+        name: 'AllowHTTPfromCustom'
+        properties: {
+          description: 'Allow HTTP from custom'
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          destinationPortRange: '443'
+          sourceAddressPrefix: customsourceaddresscidr
+          destinationAddressPrefix: '*'
+          access: 'Allow'
+          priority: 1003
           direction: 'Inbound'
           sourcePortRanges: []
           destinationPortRanges: []

@@ -85,7 +85,6 @@ module azfwdeploy '../../../modules/Microsoft.Network/AzureFirewall.bicep' = {
     useForceTunneling: useForceTunneling
   }
   dependsOn: [
-    azfwpolicy
     virtualNetwork
   ]
 }
@@ -94,7 +93,6 @@ module vm '../../../modules/Microsoft.Compute/WindowsServer2022/VirtualMachine.b
   name: 'dwwebapp'
   params: {
     virtualMachine_Name: 'dwwebapp'
-    location: resourceGroup().location
     virtualMachine_Size: 'Standard_D2s_v3'
     networkInterface_Name: 'dwwebapp-nic'
     subnet_ID: resourceId('Microsoft.Network/virtualNetworks/subnets', virtualNetworkName, 'backendSubnet')

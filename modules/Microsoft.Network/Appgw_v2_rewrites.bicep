@@ -27,6 +27,11 @@ param isWAF bool = false
 param isE2ESSL bool = false
 param backendpoolIPAddresses array = []
 param nossl bool = false
+param isMutualAuth bool = false
+param mutualauthcertname string = ''
+param mutualauthcertdata string = ''
+param headername string = 'X-Client-Cert'
+param headervalue string = '{var_client_certificate}'
 
 param tagValues object = {}
 
@@ -139,8 +144,30 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2024-05-01' =
       }
     ]
     trustedRootCertificates: []
-    trustedClientCertificates: []
-    sslProfiles: []
+    trustedClientCertificates: (isMutualAuth) ? [
+      {
+        name: mutualauthcertname
+        properties: {
+          data: mutualauthcertdata
+        }
+      }
+    ] : null
+    sslProfiles: (isMutualAuth) ? [
+      {
+        name: 'mutualauthpolicy'
+        properties: {
+          clientAuthConfiguration: {
+            verifyClientCertIssuerDN: false
+            verifyClientRevocation: 'None'
+          }
+          trustedClientCertificates: [
+            {
+              id: resourceId('Microsoft.Network/applicationGateways/trustedClientCertificates', applicationGateway_Name, mutualauthcertname)
+            }
+          ]
+        }
+      }
+    ] : null
     frontendIPConfigurations: [
       {
         name: 'fip_pub'
@@ -213,6 +240,9 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2024-05-01' =
           sslCertificate: (nossl) ? null :{ 
             id: resourceId('Microsoft.Network/applicationGateways/sslCertificates', applicationGateway_Name, certname)
           }
+          sslProfile: (isMutualAuth) ? {
+            id: resourceId('Microsoft.Network/applicationGateways/sslProfiles', applicationGateway_Name, 'mutualauthpolicy')
+          } : null
         }
       }
     ]
@@ -249,24 +279,12 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2024-05-01' =
         properties: {
           rewriteRules: [
             {
-              conditions: [
-                {
-                  ignoreCase: true
-                  negate: false
-                  pattern: '.*'
-                  variable: 'http_resp_set-cookie'
-                }
-              ]
+              conditions: null
               actionSet: {
-                responseHeaderConfigurations: [
+                requestHeaderConfigurations: [
                   {
-                    headerName: 'Set-Cookie'
-                    headerValue: '{capt_header_value_matcher_1}; HttpOnly; Secure'
-                    headerValueMatcher: {
-                      ignoreCase: true
-                      negate: false
-                      pattern: '(cookie1=.*)'
-                    }
+                    headerName: headername
+                    headerValue: headervalue
                   }
                 ]
               }

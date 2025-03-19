@@ -23,11 +23,14 @@ module keyvault '../../../modules/Microsoft.Keyvault/keyvault_with_managedID.bic
   name: 'keyvault'
   params: {
     keyVaultName: KeyVaultName
-    Keyvault_ManagedID: Keyvault_ManagedID.properties.principalId
+    managedidentity_name: keyvaultmanagedidentity_name
     Automation_ManagedID: automation_ManagedID.properties.principalId
     kvsecretofficerrole: 'Key Vault Secrets Officer'
     kvsecretuserrole: 'Key Vault Secrets User'
   }
+  dependsOn: [
+    Keyvault_ManagedID
+  ]
 }
 
 module automation_account '../../../modules/Microsoft.Automation/Automation_account.bicep' = {
