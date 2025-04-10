@@ -56,7 +56,7 @@ var subnetAddressPrefixes = [
   }
 ]
 
-resource virtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' = {
+resource virtualNetwork 'Microsoft.Network/virtualNetworks@2024-05-01' = {
   name: virtualNetwork_Name
   location: location
   properties: {
@@ -73,9 +73,9 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' = {
         name: subnetAddressPrefixes[index].name
         properties: {
           addressPrefix: subnetAddressPrefixes[index].addressPrefix
-          networkSecurityGroup: (subnet_Name != 'AGCSubnet' && subnet_Name != 'AzureFirewallSubnet' && subnet_Name != 'AzureFirewallManagementSubnet' && subnet_Name != 'GatewaySubnet' && subnet_Name != 'AGSubnet' && subnet_Name != 'AzureBastionSubnet' && subnet_Name != 'AKSSubnet') ? (subnet_Name == 'AGSubnet') ?{
+          networkSecurityGroup: (subnet_Name != 'AGCSubnet' && subnet_Name != 'AzureFirewallSubnet' && subnet_Name != 'AzureFirewallManagementSubnet' && subnet_Name != 'GatewaySubnet' && subnet_Name != 'AGSubnet' && subnet_Name != 'AzureBastionSubnet' && subnet_Name != 'AKSSubnet') ? {
             id: networkSecurityGroup.id
-          } : {
+          } : (subnet_Name == 'AGSubnet') ? {
             id:networkSecurityGroup_ApplicationGateway.id
           }: null
           routeTable: (deployudr && (subnet_Name != 'AzureFirewallSubnet' && subnet_Name != 'AzureFirewallManagementSubnet' && subnet_Name != 'GatewaySubnet' && subnet_Name != 'AGCSubnet' && subnet_Name != 'AGSubnet' && subnet_Name != 'AzureBastionSubnet' && subnet_Name != 'NVATrust' && subnet_Name != 'NVAUntrust' && subnet_Name != 'NVAMgmt')) ? {
@@ -86,6 +86,13 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' = {
               name: 'Microsoft.ServiceNetworking/trafficControllers'
               properties: {
                 serviceName: 'Microsoft.ServiceNetworking/trafficControllers'
+              }
+            }
+          ] : (subnet_Name == 'AGSubnet') ? [
+            {
+              name: 'Microsoft.Network/applicationGateways'
+              properties: {
+                serviceName: 'Microsoft.Network/applicationGateways'
               }
             }
           ] : null
@@ -215,7 +222,7 @@ resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2022-09-0
   tags: tagValues
 }
 
-resource networkSecurityGroup_ApplicationGateway 'Microsoft.Network/networkSecurityGroups@2022-11-01' = {
+resource networkSecurityGroup_ApplicationGateway 'Microsoft.Network/networkSecurityGroups@2022-11-01' = if (contains(subnet_Names, 'AGSubnet')){
   name: '${virtualNetwork_Name}_NSG_ApplicationGateway'
   location: location
   properties: {

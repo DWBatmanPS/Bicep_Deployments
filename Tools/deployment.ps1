@@ -148,6 +148,7 @@ if ($subleveldeployment) {
         
     }
     else {
+            Write-Host "Deployment Version: $DeploymentVersion Location: $Location Template File: $mainBicepFile Parameter File: $mainParameterFile"
             New-AzDeployment -name $DeploymentVersion -Location $Location -TemplateFile $mainBicepFile -TemplateParameterFile $mainParameterFile
 
     }

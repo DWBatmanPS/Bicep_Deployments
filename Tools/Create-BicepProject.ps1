@@ -9,7 +9,7 @@ param(
 $BranchName = git rev-parse --abbrev-ref HEAD
 
 # Creates a Directory for the project
-New-Item -ItemType Directory -Name $ProjectName
+New-Item -ItemType Directory -Name ".\Lab_Deployments\$ProjectName"
 
 # Creates a Directory and files for the main project file
 New-Item -ItemType Directory -Path ".\Lab_Deployments\$ProjectName" -Name "src"

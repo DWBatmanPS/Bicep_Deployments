@@ -15,6 +15,9 @@ param virtualMachine_AdminUsername string
 @secure()
 param virtualMachine_AdminPassword string
 
+@secure()
+param SSHKey string = ''
+
 @description('Name of the Virtual Machines Network Interface')
 param networkInterface_Name string = '${virtualMachine_Name}_NetworkInterface'
 
@@ -43,10 +46,10 @@ param virtualMachine_ScriptFileLocation string = 'https://raw.githubusercontent.
 
 @description('''Name of the file to be ran while the Virtual Machine is being created
 Example: Ubuntu20_DNS_Config.sh''')
-param virtualMachine_ScriptFileName string
+param virtualMachine_ScriptFileName string = ''
 // param virtualMachine_ScriptFileName string = 'Ubuntu20_WebServer_Config.sh'
 
-param commandToExecute string
+param commandToExecute string = ''
 
 param tagValues object = {}
 
@@ -100,6 +103,14 @@ resource virtualMachine_Linux 'Microsoft.Compute/virtualMachines@2023-03-01' = {
           patchMode: 'ImageDefault'
           assessmentMode: 'ImageDefault'
         }
+        ssh: {
+          publicKeys: [
+            {
+              keyData: SSHKey
+              path: '/home/${virtualMachine_AdminUsername}/.ssh/authorized_keys'
+            }
+          ]
+        }
       }
       secrets: []
       allowExtensionOperations: true
@@ -138,7 +149,7 @@ resource virtualMachine_NetworkWatcherExtension 'Microsoft.Compute/virtualMachin
   tags: tagValues
 }
 
-resource vm_CustomScriptExtension 'Microsoft.Compute/virtualMachines/extensions@2021-11-01' = {
+resource vm_CustomScriptExtension 'Microsoft.Compute/virtualMachines/extensions@2021-11-01' = if (commandToExecute != '') {
   parent: virtualMachine_Linux
   name: 'installcustomscript'
   location: resourceGroup().location

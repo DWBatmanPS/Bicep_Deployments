@@ -1,13 +1,11 @@
 param ATM_Name string = 'bicep-atm-profile'
 
-param atmsubdomain string = 'bicep-atm-profile'
-
 @allowed([
   'Priority'
   'Weighted'
   'Performance'
   'Geographic'
-  'MultiValue'
+  'Multivalue'
   'Subnet'
 ])
 param RoutingMethod string = 'Performance'
@@ -21,12 +19,6 @@ param probeProtocol string = 'HTTP'
 
 param customPort int = 8080
 
-param externalEndpointNames array = [
-  'Endpoint1'
-  'Endpoint2'
-  'Endpoint3'
-  'Endpoint4'
-]
 param endpoint array = [
   'www.contoso.com'
   'www.fabrikam.com'
@@ -34,17 +26,18 @@ param endpoint array = [
   '1.1.1.1'
 ]
 
-param weight array = [
-  1
-  1
-  1
-]
+param currentTime string = utcNow()
+param tags object = {}
 
-param customHostNeeded bool = false
+var randomSuffix1long = uniqueString(resourceGroup().id, currentTime)
+var randomSuffix1 = substring(randomSuffix1long, 0, 12)
+var ATM1FQDNGenstring = randomSuffix1
 
 var globallocation = 'global'
 var port = probeProtocol == 'HTTP' ? 80 : probeProtocol == 'HTTPS' ? 443 : customPort
 var path = probeProtocol == 'HTTP' ? '/' : probeProtocol == 'HTTPS' ? '/' : null
+
+var tagValues = tags
 
 resource ATM 'Microsoft.Network/trafficmanagerprofiles@2022-04-01' = {
   name: ATM_Name
@@ -53,7 +46,7 @@ resource ATM 'Microsoft.Network/trafficmanagerprofiles@2022-04-01' = {
     profileStatus: 'Enabled'
     trafficRoutingMethod: RoutingMethod
     dnsConfig: {
-      relativeName: atmsubdomain
+      relativeName: ATM1FQDNGenstring
       ttl: 60
     }
     monitorConfig: {
@@ -62,19 +55,25 @@ resource ATM 'Microsoft.Network/trafficmanagerprofiles@2022-04-01' = {
       path: path
     }
   }
+  tags: tagValues
 }
 
-resource ExternalEndpoint 'Microsoft.Network/trafficmanagerprofiles/externalendpoints@2022-04-01' = [for (endpointName, i) in externalEndpointNames: {
+resource ExternalEndpoint1 'Microsoft.Network/trafficmanagerprofiles/externalendpoints@2022-04-01' = {
   parent: ATM
-  name: endpointName
+  name: 'Endpoint1'
   properties: {
-    customHeaders: (customHostNeeded) ? [{
-        name: 'Host'
-        value: endpoint[i]
-      } 
-    ] : null
-    target: endpoint[i]
+    target: endpoint[0]
     endpointStatus: 'Enabled'
-    weight: weight[i]
+    endpointLocation: 'East US'
   }
-}]
+}
+
+resource ExternalEndpoint2 'Microsoft.Network/trafficmanagerprofiles/externalendpoints@2022-04-01' = {
+  parent: ATM
+  name: 'Endpoint2'
+  properties: {
+    target: endpoint[1]
+    endpointStatus: 'Enabled'
+    endpointLocation: 'West Europe'
+  }
+}
