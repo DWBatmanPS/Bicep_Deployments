@@ -15,7 +15,7 @@ To get started with deploying Bicep templates, follow these steps:
 1. **Clone the repository**:
 
     ``` sh
-    git clone https://github.com/yourusernameDWBatmanPS
+    git clone https://github.com/DWBatmanPS/Bicep_Deployments.git
     ```
 
 2. **Install Bicep CLI**:
