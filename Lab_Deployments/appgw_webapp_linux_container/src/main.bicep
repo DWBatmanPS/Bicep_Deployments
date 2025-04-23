@@ -42,9 +42,11 @@ module appgw '../../../modules/Microsoft.Network/ApplicationGateway_v2.bicep' = 
     keyvault_managed_ID: keyvault_managed_ID
     certname: certname
     isWAF: false
+    isE2ESSL: true
     backendPoolFQDNs: [
       '${Webapp.outputs.website_FQDN}'
     ]
+    useCustomProbe: true
     tagValues: {}
   }
 }

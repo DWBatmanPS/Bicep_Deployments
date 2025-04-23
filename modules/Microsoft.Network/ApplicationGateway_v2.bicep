@@ -30,6 +30,7 @@ param nossl bool = false
 param pathmap bool = false
 param path string = '/path'
 param backendpoolpathIPAddresses array = []
+param useCustomProbe bool = false
 
 param tagValues object = {}
 
@@ -218,6 +219,9 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2022-11-01' =
           cookieBasedAffinity: 'Disabled'
           pickHostNameFromBackendAddress: true
           requestTimeout: 20
+          probe: (useCustomProbe) ? {
+            id: resourceId('Microsoft.Network/applicationGateways/probes', applicationGateway_Name, 'custom-probe')
+          } : null
         }
       }
     ]
@@ -307,7 +311,26 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2022-11-01' =
       }
     ]
     routingRules: []
-    probes: []
+    probes: (useCustomProbe) ? [
+      {
+        name: 'custom-probe'
+        properties: {
+          pickHostNameFromBackendHttpSettings: true
+          interval: 20
+          match: {
+            statusCodes: [
+              '200'
+              '302'
+            ]
+          }
+          path: '/'
+          port: (isE2ESSL) ? 443 : 80
+          protocol: (isE2ESSL) ? 'Https' : 'Http'
+          timeout: 30
+          unhealthyThreshold: 2
+        }
+      }
+    ] : []
     rewriteRuleSets: []
     redirectConfigurations: []
     privateLinkConfigurations: []
