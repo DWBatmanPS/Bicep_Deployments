@@ -34,11 +34,12 @@ param subnet_Names array = [
   'NVATrust'
   'NVAUntrust'
   'NVAMgmt'
+  'RouteServerSubnet'
 ]
 
 param nvaIpAddress string = '10.0.0.4'
 param deployudr bool = true
-param customsourceaddresscidr string = '208.107.184.241/32'
+param customsourceaddresscidr string = '8.8.8.8/32'
 param deploy_NatGateway bool = false
 param publicipname string = 'Nat_Gateway_VIP'
 param natgatewayname string = 'Nat_Gateway'
@@ -73,12 +74,12 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2024-05-01' = {
         name: subnetAddressPrefixes[index].name
         properties: {
           addressPrefix: subnetAddressPrefixes[index].addressPrefix
-          networkSecurityGroup: (subnet_Name != 'AGCSubnet' && subnet_Name != 'AzureFirewallSubnet' && subnet_Name != 'AzureFirewallManagementSubnet' && subnet_Name != 'GatewaySubnet' && subnet_Name != 'AGSubnet' && subnet_Name != 'AzureBastionSubnet' && subnet_Name != 'AKSSubnet') ? {
+          networkSecurityGroup: (subnet_Name != 'AGCSubnet' && subnet_Name != 'AzureFirewallSubnet' && subnet_Name != 'AzureFirewallManagementSubnet' && subnet_Name != 'GatewaySubnet' && subnet_Name != 'AGSubnet' && subnet_Name != 'AzureBastionSubnet' && subnet_Name != 'AKSSubnet' && subnet_Name != 'RouteServerSubnet') ? {
             id: networkSecurityGroup.id
           } : (subnet_Name == 'AGSubnet') ? {
             id:networkSecurityGroup_ApplicationGateway.id
           }: null
-          routeTable: (deployudr && (subnet_Name != 'AzureFirewallSubnet' && subnet_Name != 'AzureFirewallManagementSubnet' && subnet_Name != 'GatewaySubnet' && subnet_Name != 'AGCSubnet' && subnet_Name != 'AGSubnet' && subnet_Name != 'AzureBastionSubnet' && subnet_Name != 'NVATrust' && subnet_Name != 'NVAUntrust' && subnet_Name != 'NVAMgmt')) ? {
+          routeTable: (deployudr && (subnet_Name != 'AzureFirewallSubnet' && subnet_Name != 'AzureFirewallManagementSubnet' && subnet_Name != 'GatewaySubnet' && subnet_Name != 'AGCSubnet' && subnet_Name != 'AGSubnet' && subnet_Name != 'AzureBastionSubnet' && subnet_Name != 'NVATrust' && subnet_Name != 'NVAUntrust' && subnet_Name != 'NVAMgmt'&& subnet_Name != 'RouteServerSubnet')) ? {
             id: routeTable.id
           } : null
           delegations: (subnet_Name == 'AGCSubnet') ? [
@@ -96,7 +97,7 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2024-05-01' = {
               }
             }
           ] : null
-          natGateway: (deploy_NatGateway && deployudr != true && (subnet_Name != 'AzureFirewallSubnet' && subnet_Name != 'AzureFirewallManagementSubnet' && subnet_Name != 'GatewaySubnet' && subnet_Name != 'AGCSubnet' && subnet_Name != 'AGSubnet' && subnet_Name != 'AzureBastionSubnet' && subnet_Name != 'NVATrust' && subnet_Name != 'NVAUntrust' && subnet_Name != 'NVAMgmt')) ? {
+          natGateway: (deploy_NatGateway && deployudr != true && (subnet_Name != 'AzureFirewallSubnet' && subnet_Name != 'AzureFirewallManagementSubnet' && subnet_Name != 'GatewaySubnet' && subnet_Name != 'AGCSubnet' && subnet_Name != 'AGSubnet' && subnet_Name != 'AzureBastionSubnet' && subnet_Name != 'NVATrust' && subnet_Name != 'NVAUntrust' && subnet_Name != 'NVAMgmt' && subnet_Name != 'RouteServerSubnet')) ? {
             id: natgateway.id
           } : null
         }

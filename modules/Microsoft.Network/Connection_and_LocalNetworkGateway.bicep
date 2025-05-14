@@ -1,6 +1,3 @@
-@description('Azure Datacenter that the source VNG is deployed')
-param location string
-
 @description('Friendly name for the destination VPN device')
 param vpn_Destination_Name string
 
@@ -30,6 +27,7 @@ param tagValues object = {}
 
 var virtualNetworkGateway_ID_Split = split(virtualNetworkGateway_ID, '/')
 var virtualNetworkGateway_Name = virtualNetworkGateway_ID_Split[8] 
+var location = resourceGroup().location
 
 resource connection 'Microsoft.Network/connections@2022-11-01' = {
     name: '${virtualNetworkGateway_Name}_to_${vpn_Destination_Name}_Connection'

@@ -19,6 +19,7 @@ param VMSubnetName string = 'VMSubnet'
 param vmscriptlocation string = 'https://raw.githubusercontent.com/Azure-Samples/windowsvm-custom-script-extension/master/vmextension/ConfigureRemotingForAnsible.ps1'
 param vmscriptfilename string = 'ConfigureRemotingForAnsible.ps1'
 param keyVaultName string = 'DanWheelerVaultStr'
+param customsourceaddresscidr string = '1.1.1.1/32'
 
 module virtualNetwork '../../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
   name: virtualNetworkName
@@ -26,6 +27,7 @@ module virtualNetwork '../../../modules/Microsoft.Network/VirtualNetwork.bicep' 
     virtualNetwork_Name: virtualNetworkName
     virtualNetwork_AddressPrefix: virtualNetworkPrefix
     subnet_Names: subnet_Names
+    customsourceaddresscidr: customsourceaddresscidr
     deployudr: false
   }
 }
@@ -39,7 +41,7 @@ module appgw '../../../modules/Microsoft.Network/ApplicationGateway_v2.bicep' = 
     keyVaultName: keyVaultName
     keyvault_managed_ID: keyvault_managed_ID
     certname: certname
-    isWAF: false
+    isWAF: true
     backendPoolFQDNs: []
     backendpoolIPAddresses: [
       '${VM.outputs.networkInterface_PrivateIPAddress}'

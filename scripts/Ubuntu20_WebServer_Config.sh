@@ -1,7 +1,9 @@
 #!/bin/bash
+set -e
 
 server_name=$1
 
+export DEBIAN_FRONTEND=noninteractive
 
 # Update the package repository and install Nginx
 sudo apt update
@@ -51,4 +53,7 @@ sudo tee /var/www/html/index.html >/dev/null <<EOL
 EOL
 
 # Reload Nginx to apply the configuration changes
-sudo systemctl reload nginx
+sudo systemctl reload nginx || true
+
+# Output Nginx status for troubleshooting
+sudo systemctl status nginx || true

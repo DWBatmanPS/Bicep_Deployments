@@ -1,6 +1,3 @@
-@description('Azure Datacenter that the resources are deployed to')
-param location string
-
 @description('Name of the Azure Virtual Network Gateway')
 param virtualNetworkGateway_Name string
 
@@ -81,6 +78,8 @@ var ipConfiguration = activeActive ? [
   }
 ]
 
+var location = resourceGroup().location
+
 resource virtualNetworkGateway_PublicIPAddress01 'Microsoft.Network/publicIPAddresses@2022-11-01' = {
   name: '${virtualNetworkGateway_Name}_PIP_01'
   location: location
@@ -97,7 +96,7 @@ resource virtualNetworkGateway_PublicIPAddress01 'Microsoft.Network/publicIPAddr
   tags: tagValues
 }
 
-resource virtualNetworkGateway_PublicIPAddress02 'Microsoft.Network/publicIPAddresses@2022-11-01' = {
+resource virtualNetworkGateway_PublicIPAddress02 'Microsoft.Network/publicIPAddresses@2022-11-01' = if (activeActive) {
   name: '${virtualNetworkGateway_Name}_PIP_02'
   location: location
   sku: {
