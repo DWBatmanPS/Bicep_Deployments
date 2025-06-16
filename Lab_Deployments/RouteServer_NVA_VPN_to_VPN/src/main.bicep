@@ -1,7 +1,9 @@
 param vnet1_name string = 'NVAVnet'
 param vnet2_name string = 'SpokeVnet'
+param vnet3_name string = 'RemoteVnet'
 param virtualNetwork1_AddressPrefix string = '10.0.0.0/16'
 param virtualNetwork2_AddressPrefix string = '10.1.0.0/16'
+param virtualNetwork3_AddressPrefix string = '192.168.0.0/16'
 param vnet1subnet_Names array = [
   'NVATrust'
   'NVAUntrust'
@@ -12,7 +14,10 @@ param vnet2subnet_Names array = [
   'PESubnet'
   'VMsubnet'
 ]
-param nvaip string = '10.0.1.4'
+  param vnet3subnet_Names array = [
+  'GatewaySubnet'
+  'VMsubnet'
+]
 param customcidr string
 param NVA1trustIP string = '10.0.0.5'
 param NVA1untrustIP string = '10.0.1.5'
@@ -23,18 +28,15 @@ param webserveradmin string = 'webadmin'
 param webserverpassword string
 param script_location string
 param script_name string = 'webserverconfig.sh'
-param OnPremName string = 'OnPrem'
-param OnPremPublicIP string 
-param OnPremBGPIP string
-param OnPremASN int = 65005
 @secure()
-param OnPremSharedKey string
+param SharedKey string
 @secure()
 param SSHKey string
 param OPNScriptURI string = 'https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/101-vm-opnsense-nva/scripts/'
 param ScriptName string = 'opnsense.sh'
 param OPNVersion string = '25.1'
 param WALinuxVersion string = '2.12.0.4'
+param customnsgblock array = []
 
 
 module NVAVnet '../../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
@@ -46,7 +48,7 @@ module NVAVnet '../../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
     subnet_Names: vnet1subnet_Names
     deployudr: false
     customsourceaddresscidr: customcidr
-    deploy_NatGateway: true
+    customnsgblock: customnsgblock
   }
 }
 
@@ -56,6 +58,17 @@ module SpokeVnet '../../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
     virtualNetwork_Name: vnet2_name
     virtualNetwork_AddressPrefix: virtualNetwork2_AddressPrefix
     subnet_Names: vnet2subnet_Names
+    deployudr: false
+    customsourceaddresscidr: customcidr
+  }
+}
+
+module RemoteVnet '../../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
+  name: 'RemoteVnet'
+  params: {
+    virtualNetwork_Name: vnet3_name
+    virtualNetwork_AddressPrefix: virtualNetwork3_AddressPrefix
+    subnet_Names: vnet3subnet_Names
     deployudr: false
     customsourceaddresscidr: customcidr
   }
@@ -80,7 +93,7 @@ module RouteServer '../../../modules/Microsoft.Network/routeserver.bicep' = {
     location: resourceGroup().location
     virtualNetwork_Name: vnet1_name
     NVA_ASN: 65002
-    NVAip:NVA1trustIP
+    NVAip: NVA1trustIP
   }
   dependsOn: [
     NVAVnet
@@ -184,14 +197,36 @@ module VPNGateway '../../../modules/Microsoft.Network/VirtualNetworkGateway.bice
   ]
 }
 
-module LNG '../../../modules/Microsoft.Network/Connection_and_LocalNetworkGateway.bicep'= {
-  name: 'LNG'
+module RemoteVPNGateway '../../../modules/Microsoft.Network/VirtualNetworkGateway.bicep' = {
+  name: 'RemoteVPNGateway'
   params: {
-    vpn_Destination_Name: OnPremName
-    vpn_Destination_PublicIPAddress: OnPremPublicIP
-    vpn_Destination_BGPIPAddress: OnPremBGPIP
-    vpn_Destination_ASN: OnPremASN
-    vpn_SharedKey: OnPremSharedKey
+    virtualNetworkGateway_Name: 'RemoteVPNGateway'
+    virtualNetworkGateway_SKU: 'VpnGw1'
+    vpnGatewayGeneration: 'Generation1'
+    virtualNetworkGateway_ASN: 65530
+    virtualNetworkGateway_Subnet_ResourceID: resourceId('Microsoft.Network/virtualNetworks/subnets', vnet3_name, 'GatewaySubnet')
+    activeActive: true
+  }
+  dependsOn: [
+    RemoteVnet
+  ]
+}
+
+module Connection1 '../../../modules/Microsoft.Network/VPNConnection_two_azure_Gateways.bicep'= {
+  name: 'Connection1'
+  params: {
     virtualNetworkGateway_ID: VPNGateway.outputs.virtualNetworkGateway_ResourceID
+    virtualNetworkGateway_ID2: RemoteVPNGateway.outputs.virtualNetworkGateway_ResourceID
+    vpn_SharedKey: SharedKey
   }
 }
+
+module Connection2 '../../../modules/Microsoft.Network/VPNConnection_two_azure_Gateways.bicep'= {
+  name: 'Connection2'
+  params: {
+    virtualNetworkGateway_ID: RemoteVPNGateway.outputs.virtualNetworkGateway_ResourceID
+    virtualNetworkGateway_ID2: VPNGateway.outputs.virtualNetworkGateway_ResourceID
+    vpn_SharedKey: SharedKey
+  }
+}
+

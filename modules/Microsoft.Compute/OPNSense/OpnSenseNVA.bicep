@@ -2,7 +2,6 @@ param NVAName string = 'OPNSenseNVA'
 param VMSize string = 'B2ms'
 param untrustnic_objectid string
 param trustnic_objectid string
-param mgmtnic_objectid string
 param virtualMachine_AdminUsername string
 @secure()
 param virtualMachine_AdminPassword string
@@ -10,9 +9,15 @@ param OPNScriptURI string
 param ShellScriptName string
 param ShellScriptObj object = {}
 param windowsvmsubnet object = {}
+param vnetname string = 'Vnet1'
 
-resource trustedSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-05-01' existing = if (!empty(ShellScriptObj.TrustedSubnetName)){
+
+resource nvavnet 'Microsoft.Network/virtualNetworks@2024-05-01' existing = {
+  name: vnetname
+}
+resource trustedSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-05-01' existing = {
   name: ShellScriptObj.TrustedSubnetName
+  parent: nvavnet
 }
 
 resource OPNsense 'Microsoft.Compute/virtualMachines@2023-07-01' = {
@@ -54,25 +59,20 @@ resource OPNsense 'Microsoft.Compute/virtualMachines@2023-07-01' = {
           id: trustnic_objectid
           properties: {
             deleteOption: 'Delete'
-            primary: true
+            primary: false
           }
         }
         {
           id: untrustnic_objectid
           properties: {
             deleteOption: 'Delete'
-            primary: false
-          }
-        }
-        {
-          id: mgmtnic_objectid
-          properties: {
-            deleteOption: 'Delete'
-            primary: false
+            primary: true
           }
         }
       ]
     }
+    evictionPolicy: 'Deallocate'
+    priority: 'Spot'
   }
   plan: {
     name: '14_1-release-amd64-gen2-zfs'

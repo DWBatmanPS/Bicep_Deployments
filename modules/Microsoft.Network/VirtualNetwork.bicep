@@ -45,6 +45,8 @@ param publicipname string = 'Nat_Gateway_VIP'
 param natgatewayname string = 'Nat_Gateway'
 param UsecustomLocation bool = false
 param customlocation string = 'eastus'
+param add443Inbound bool = false
+param customnsgblock array = []
 
 var location = (UsecustomLocation) ? customlocation: resourceGroup().location
 var baseAddress = split(virtualNetwork_AddressPrefix, '/')[0]
@@ -57,79 +59,7 @@ var subnetAddressPrefixes = [
   }
 ]
 
-resource virtualNetwork 'Microsoft.Network/virtualNetworks@2024-05-01' = {
-  name: virtualNetwork_Name
-  location: location
-  properties: {
-    dhcpOptions: {
-      dnsServers: dnsServers
-    }
-    addressSpace: {
-      addressPrefixes: [
-        virtualNetwork_AddressPrefix
-      ]
-    }
-    subnets: [
-      for (subnet_Name, index) in subnet_Names: {
-        name: subnetAddressPrefixes[index].name
-        properties: {
-          addressPrefix: subnetAddressPrefixes[index].addressPrefix
-          networkSecurityGroup: (subnet_Name != 'AGCSubnet' && subnet_Name != 'AzureFirewallSubnet' && subnet_Name != 'AzureFirewallManagementSubnet' && subnet_Name != 'GatewaySubnet' && subnet_Name != 'AGSubnet' && subnet_Name != 'AzureBastionSubnet' && subnet_Name != 'AKSSubnet' && subnet_Name != 'RouteServerSubnet') ? {
-            id: networkSecurityGroup.id
-          } : (subnet_Name == 'AGSubnet') ? {
-            id:networkSecurityGroup_ApplicationGateway.id
-          }: null
-          routeTable: (deployudr && (subnet_Name != 'AzureFirewallSubnet' && subnet_Name != 'AzureFirewallManagementSubnet' && subnet_Name != 'GatewaySubnet' && subnet_Name != 'AGCSubnet' && subnet_Name != 'AGSubnet' && subnet_Name != 'AzureBastionSubnet' && subnet_Name != 'NVATrust' && subnet_Name != 'NVAUntrust' && subnet_Name != 'NVAMgmt'&& subnet_Name != 'RouteServerSubnet')) ? {
-            id: routeTable.id
-          } : null
-          delegations: (subnet_Name == 'AGCSubnet') ? [
-            {
-              name: 'Microsoft.ServiceNetworking/trafficControllers'
-              properties: {
-                serviceName: 'Microsoft.ServiceNetworking/trafficControllers'
-              }
-            }
-          ] : (subnet_Name == 'AGSubnet') ? [
-            {
-              name: 'Microsoft.Network/applicationGateways'
-              properties: {
-                serviceName: 'Microsoft.Network/applicationGateways'
-              }
-            }
-          ] : null
-          natGateway: (deploy_NatGateway && deployudr != true && (subnet_Name != 'AzureFirewallSubnet' && subnet_Name != 'AzureFirewallManagementSubnet' && subnet_Name != 'GatewaySubnet' && subnet_Name != 'AGCSubnet' && subnet_Name != 'AGSubnet' && subnet_Name != 'AzureBastionSubnet' && subnet_Name != 'NVATrust' && subnet_Name != 'NVAUntrust' && subnet_Name != 'NVAMgmt' && subnet_Name != 'RouteServerSubnet')) ? {
-            id: natgateway.id
-          } : null
-        }
-      }
-    ]
-  }
-}
-
-resource routeTable 'Microsoft.Network/routeTables@2023-02-01' = if (deployudr){
-  name: routeTable_Name
-  location: location
-  properties: {
-    disableBgpRoutePropagation: false
-    routes: [
-      { id: resourceId('Microsoft.Network/routeTables/routes', routeTable_Name, 'VirtualNetworkRoute')
-        name: 'VirtualNetworkRoute'
-        properties: {
-          addressPrefix: virtualNetwork_AddressPrefix
-          nextHopType: 'VirtualAppliance'
-          nextHopIpAddress: nvaIpAddress
-        }
-      }
-    ]
-  }
-  tags: tagValues
-}
-
-resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2022-09-01' = {
-  name: networkSecurityGroup_Default_Name
-  location: location
-  properties: {
-    securityRules: [
+var NSGAllow443 = (add443Inbound) ? [
       {
         id: resourceId('Microsoft.Network/networkSecurityGroups/securityRules', networkSecurityGroup_Default_Name, 'AllowCustomInbound')
         name: 'AllowCustomInbound'
@@ -218,6 +148,156 @@ resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2022-09-0
           ]
         }
       }
+    ]
+    : [
+      {
+        id: resourceId('Microsoft.Network/networkSecurityGroups/securityRules', networkSecurityGroup_Default_Name, 'AllowCustomInbound')
+        name: 'AllowCustomInbound'
+        properties: {
+          description: 'Allow Custom Inbound'
+          protocol: '*'
+          sourcePortRange: '*'
+          sourceAddressPrefix: customsourceaddresscidr
+          destinationAddressPrefix: 'VirtualNetwork'
+          access: 'Allow'
+          priority: 100
+          direction: 'Inbound'
+          destinationPortRanges: [
+            '22'
+            '3389'
+          ]
+        }
+      }
+      {
+        id: resourceId('Microsoft.Network/networkSecurityGroups/securityRules', networkSecurityGroup_Default_Name, 'AllowCustomInbound')
+        name: 'AllowCustomhttphttpsInbound'
+        properties: {
+          description: 'Allow Custom HTTP and HTTPS Inbound'
+          protocol: '*'
+          sourcePortRange: '*'
+          sourceAddressPrefix: customsourceaddresscidr
+          destinationAddressPrefix: 'VirtualNetwork'
+          access: 'Allow'
+          priority: 101
+          direction: 'Inbound'
+          destinationPortRanges: [
+            '80'
+            '443'
+          ]
+        }
+      }
+      {
+        name: 'AllowGatewayManager'
+        properties: {
+          description: 'Allow GatewayManager'
+          protocol: '*'
+          sourcePortRange: '*'
+          destinationPortRange: '65200-65535'
+          sourceAddressPrefix: 'GatewayManager'
+          destinationAddressPrefix: '*'
+          access: 'Allow'
+          priority: 1003
+          direction: 'Inbound'
+          sourcePortRanges: []
+          destinationPortRanges: []
+          sourceAddressPrefixes: []
+          destinationAddressPrefixes: []
+        }
+      }
+      {
+        id: resourceId('Microsoft.Network/networkSecurityGroups/securityRules', networkSecurityGroup_Default_Name, 'AllowHttpInboundlocal')
+        name: 'AllowHttpInboundlocal'
+        properties: {
+          description: 'Allow Http Inbound'
+          protocol: '*'
+          sourcePortRange: '*'
+          sourceAddressPrefix: 'VirtualNetwork'
+          destinationAddressPrefix: 'VirtualNetwork'
+          access: 'Allow'
+          priority: 1004
+          direction: 'Inbound'
+          destinationPortRanges: [
+            '80'
+          ]
+        }
+      }
+    ]
+
+resource virtualNetwork 'Microsoft.Network/virtualNetworks@2024-05-01' = {
+  name: virtualNetwork_Name
+  location: location
+  properties: {
+    dhcpOptions: {
+      dnsServers: dnsServers
+    }
+    addressSpace: {
+      addressPrefixes: [
+        virtualNetwork_AddressPrefix
+      ]
+    }
+    subnets: [
+      for (subnet_Name, index) in subnet_Names: {
+        name: subnetAddressPrefixes[index].name
+        properties: {
+          addressPrefix: subnetAddressPrefixes[index].addressPrefix
+          networkSecurityGroup: (subnet_Name != 'AGCSubnet' && subnet_Name != 'AzureFirewallSubnet' && subnet_Name != 'AzureFirewallManagementSubnet' && subnet_Name != 'GatewaySubnet' && subnet_Name != 'AGSubnet' && subnet_Name != 'AzureBastionSubnet' && subnet_Name != 'AKSSubnet' && subnet_Name != 'RouteServerSubnet') ? {
+            id: networkSecurityGroup.id
+          } : (subnet_Name == 'AGSubnet') ? {
+            id:networkSecurityGroup_ApplicationGateway.id
+          }: null
+          routeTable: (deployudr && (subnet_Name != 'AzureFirewallSubnet' && subnet_Name != 'AzureFirewallManagementSubnet' && subnet_Name != 'GatewaySubnet' && subnet_Name != 'AGCSubnet' && subnet_Name != 'AGSubnet' && subnet_Name != 'AzureBastionSubnet' && subnet_Name != 'NVATrust' && subnet_Name != 'NVAUntrust' && subnet_Name != 'NVAMgmt'&& subnet_Name != 'RouteServerSubnet')) ? {
+            id: routeTable.id
+          } : null
+          delegations: (subnet_Name == 'AGCSubnet') ? [
+            {
+              name: 'Microsoft.ServiceNetworking/trafficControllers'
+              properties: {
+                serviceName: 'Microsoft.ServiceNetworking/trafficControllers'
+              }
+            }
+          ] : (subnet_Name == 'AGSubnet') ? [
+            {
+              name: 'Microsoft.Network/applicationGateways'
+              properties: {
+                serviceName: 'Microsoft.Network/applicationGateways'
+              }
+            }
+          ] : null
+          natGateway: (deploy_NatGateway && deployudr != true && (subnet_Name != 'AzureFirewallSubnet' && subnet_Name != 'AzureFirewallManagementSubnet' && subnet_Name != 'GatewaySubnet' && subnet_Name != 'AGCSubnet' && subnet_Name != 'AGSubnet' && subnet_Name != 'AzureBastionSubnet' && subnet_Name != 'RouteServerSubnet')) ? {
+            id: natgateway.id
+          } : null
+        }
+      }
+    ]
+  }
+}
+
+resource routeTable 'Microsoft.Network/routeTables@2023-02-01' = if (deployudr){
+  name: routeTable_Name
+  location: location
+  properties: {
+    disableBgpRoutePropagation: false
+    routes: [
+      { id: resourceId('Microsoft.Network/routeTables/routes', routeTable_Name, 'VirtualNetworkRoute')
+        name: 'VirtualNetworkRoute'
+        properties: {
+          addressPrefix: virtualNetwork_AddressPrefix
+          nextHopType: 'VirtualAppliance'
+          nextHopIpAddress: nvaIpAddress
+        }
+      }
+    ]
+  }
+  tags: tagValues
+}
+
+resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2022-09-01' = {
+  name: networkSecurityGroup_Default_Name
+  location: location
+  properties: {
+    securityRules: [
+      ...NSGAllow443
+      ...customnsgblock
     ]
   }
   tags: tagValues

@@ -12,7 +12,6 @@ param vnet2subnet_Names array = [
   'PESubnet'
   'VMsubnet'
 ]
-param nvaip string = '10.0.1.4'
 param customcidr string
 param NVA1trustIP string = '10.0.0.5'
 param NVA1untrustIP string = '10.0.1.5'
@@ -23,12 +22,6 @@ param webserveradmin string = 'webadmin'
 param webserverpassword string
 param script_location string
 param script_name string = 'webserverconfig.sh'
-param OnPremName string = 'OnPrem'
-param OnPremPublicIP string 
-param OnPremBGPIP string
-param OnPremASN int = 65005
-@secure()
-param OnPremSharedKey string
 @secure()
 param SSHKey string
 param OPNScriptURI string = 'https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/101-vm-opnsense-nva/scripts/'
@@ -46,7 +39,6 @@ module NVAVnet '../../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
     subnet_Names: vnet1subnet_Names
     deployudr: false
     customsourceaddresscidr: customcidr
-    deploy_NatGateway: true
   }
 }
 
@@ -80,7 +72,7 @@ module RouteServer '../../../modules/Microsoft.Network/routeserver.bicep' = {
     location: resourceGroup().location
     virtualNetwork_Name: vnet1_name
     NVA_ASN: 65002
-    NVAip:NVA1trustIP
+    NVAip: NVA1trustIP
   }
   dependsOn: [
     NVAVnet
@@ -167,31 +159,4 @@ module WebServer '../../../modules/Microsoft.Compute/Ubuntu20/VirtualMachine.bic
   dependsOn: [
     SpokeVnet
   ]
-}
-
-module VPNGateway '../../../modules/Microsoft.Network/VirtualNetworkGateway.bicep' = {
-  name: 'VPNGateway'
-  params: {
-    virtualNetworkGateway_Name: 'VPNGateway'
-    virtualNetworkGateway_SKU: 'VpnGw1'
-    vpnGatewayGeneration: 'Generation1'
-    virtualNetworkGateway_ASN: 65515
-    virtualNetworkGateway_Subnet_ResourceID: resourceId('Microsoft.Network/virtualNetworks/subnets', vnet1_name, 'GatewaySubnet')
-    activeActive: true
-  }
-  dependsOn: [
-    NVAVnet
-  ]
-}
-
-module LNG '../../../modules/Microsoft.Network/Connection_and_LocalNetworkGateway.bicep'= {
-  name: 'LNG'
-  params: {
-    vpn_Destination_Name: OnPremName
-    vpn_Destination_PublicIPAddress: OnPremPublicIP
-    vpn_Destination_BGPIPAddress: OnPremBGPIP
-    vpn_Destination_ASN: OnPremASN
-    vpn_SharedKey: OnPremSharedKey
-    virtualNetworkGateway_ID: VPNGateway.outputs.virtualNetworkGateway_ResourceID
-  }
 }

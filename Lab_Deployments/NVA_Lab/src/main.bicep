@@ -17,7 +17,7 @@ param NVA1trustIP string = '10.0.1.5'
 param NVA1untrustIP string = '10.0.2.5'
 param NVA2trustIP string = '10.0.1.6'
 param NVA2untrustIP string = '10.0.2.6'
-param OpnsenseImage string = 'OPNsense-21.7-OpenSSL-dvd-amd64'
+//param OpnsenseImage string = 'OPNsense-21.7-OpenSSL-dvd-amd64'
 param NVA_name string = 'NVA'
 param VMSize string = 'Standard_D2s_v3'
 param webserveradmin string = 'webadmin'
@@ -91,11 +91,9 @@ module NVA1 '../../../modules/Microsoft.Compute/OPNSense/OpnSenseNVA.bicep' = {
   params: {
     NVAName: '${NVA_name}1'
     VMSize: VMSize
-    imageReference_Id: OpnsenseImage
+//     imageReference_Id: OpnsenseImage
     untrustnic_objectid: NVA1UntrustNIC.outputs.networkInterface_ID
     trustnic_objectid: NVA1TrustNIC.outputs.networkInterface_ID
-    mgmtnic_objectid: NVA1MgmtNIC.outputs.networkInterface_ID
-    tagValues: {}
     virtualMachine_AdminUsername: 'azureadmin'
     virtualMachine_AdminPassword: 'Password1234!'
   }
@@ -156,11 +154,9 @@ module NVA2 '../../../modules/Microsoft.Compute/OPNSense/OpnSenseNVA.bicep' = {
   params: {
     NVAName: '${NVA_name}2'
     VMSize: VMSize
-    imageReference_Id: OpnsenseImage
+   //mageReference_Id: OpnsenseImage
     untrustnic_objectid: NVA2UntrustNIC.outputs.networkInterface_ID
     trustnic_objectid: NVA2TrustNIC.outputs.networkInterface_ID
-    mgmtnic_objectid: NVA2MgmtNIC.outputs.networkInterface_ID
-    tagValues: {}
     virtualMachine_AdminUsername: 'azureadmin'
     virtualMachine_AdminPassword: 'Password1234!'
   }

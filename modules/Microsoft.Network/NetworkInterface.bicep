@@ -26,6 +26,8 @@ param addtoloadbalancer bool = false
 
 param loadbalancername string = ''
 
+param IPForward bool = false
+
 param tagValues object = {}
 
 resource networkInterfaceWithoutPubIP 'Microsoft.Network/networkInterfaces@2022-09-01' = if (!addPublicIPAddress) {
@@ -52,7 +54,7 @@ resource networkInterfaceWithoutPubIP 'Microsoft.Network/networkInterfaces@2022-
       }
     ]
     enableAcceleratedNetworking: acceleratedNetworking
-    enableIPForwarding: false
+    enableIPForwarding: IPForward
     disableTcpStateTracking: false
     nicType: 'Standard'
   }

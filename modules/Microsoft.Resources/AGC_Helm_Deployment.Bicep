@@ -35,38 +35,13 @@ param isCrossTenant bool = false
 @description('A delay before the script import operation starts. Primarily to allow Azure AAD Role Assignments to propagate')
 param initialScriptDelay string = '120s'
 
-@description('The name of the Helm repository')
-param helmRepo string
+param DeployName string = 'agc-controller'
 
-@description('The URL of the Helm repository')
-param helmRepoURL string
+param AGCVersion string = '1.6.7'
 
-@description('The specific Helm chart to be used from the repository')
-param helmApp string
+param ControllerNamespace string = 'azure-alb-system'
 
-@description('The name to assign to the deployed Helm application')
-param helmAppName string
-
-@description('Additional parameters for the Helm deployment command, such as namespace creation and naming')
-param helmAppParams string = ''
-
-@description('A base64 encoded string of the helm values file')
-param helmAppValues string = ''
-
-param AGICIDName string
-
-param AGICNamespace string = 'default'
-
-param AppGatewayID string
-
-param ClientID string
-
-param DeployName string = 'agic-controller'
-
-param shared string = 'false'
-param subResourceNamePrefix string = ''
-
-param AGICVersion string = '1.9.1'
+param AGCClientID string
 
 var location = resourceGroup().location
 var useExistingManagedIdentity = newOrExistingManagedIdentity == 'existing'
@@ -121,24 +96,12 @@ resource runAksCommand 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
       { name: 'RG', value: resourceGroup().name }
       { name: 'aksName', value: aksName }
       { name: 'initialDelay', value: initialScriptDelay}
-      { name: 'helmRepo', value: helmRepo}
-      { name: 'helmRepoURL', value: helmRepoURL}
-      { name: 'helmAppName', value: helmAppName}
-      { name: 'helmApp', value: helmApp}
-      { name: 'helmAppParams', value: helmAppParams}
-      { name: 'helmAppValues', value: helmAppValues}
-      { name: 'AGICIDName', value: AGICIDName}
-      { name: 'AGICNamespace', value: AGICNamespace}
-      { name: 'subscriptionID', value: subscription().subscriptionId}
-      { name: 'AppgwID', value: AppGatewayID}
-      { name: 'ClientID', value: ClientID}
       { name: 'DeployName', value: DeployName}
-      { name: 'verbosityLevel', value: '5'}
-      { name: 'subResourceNamePrefix', value: subResourceNamePrefix}
-      { name: 'shared', value: shared}
-      { name: 'AIGCVersion', value: AGICVersion} // Version of AGIC to deploy
+      { name: 'AGCVersion', value: AGCVersion} // Version of AGIC to deploy
+      { name: 'CONTROLLER_NAMESPACE', value: ControllerNamespace}
+      { name: 'ALBClientID', value: AGCClientID}
     ]
-    scriptContent: loadTextContent('../../scripts/agic-aks-run-command-file.sh')
+    scriptContent: loadTextContent('../../scripts/agc-aks-run-command-file.sh')
     cleanupPreference: cleanupPreference
   }
 }

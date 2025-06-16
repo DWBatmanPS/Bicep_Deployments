@@ -33,7 +33,7 @@ param virtualNetworkGateway_ASN int
 param virtualNetworkGateway_Subnet_ResourceID string
 
 @description('Configures the Virtual Network Gateway as Active Active with two Public IP Addresses if True.  Default is False.')
-param activeActive bool = false
+param activeActive bool = true
 
 param tagValues object = {}
 
@@ -52,8 +52,8 @@ var ipConfiguration = activeActive ? [
     }
   }
   {
+    name: 'vNetGatewayConfig2'
     properties: {
-      name: 'vNetGatewayConfig2'
       privateIPAllocationMethod: 'Dynamic'
       subnet: {
         id: virtualNetworkGateway_Subnet_ResourceID

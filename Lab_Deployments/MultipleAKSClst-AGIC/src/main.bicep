@@ -25,6 +25,7 @@ param AGICNamespace string = 'default'
 param DeployName1 string = 'agic-controller'
 param DeployName2 string = 'agic-controller'
 param shared string = 'true'
+param AGICVersion string = '1.9.1'
 //param serviceprincipal_client_Id string
 
 
@@ -229,6 +230,7 @@ module AGIC_Helm_Install1 '../../../modules/Microsoft.Resources/AGIC_Helm_Deploy
     DeployName: DeployName1
     subResourceNamePrefix: 'clst1-'
     shared: shared
+    AGICVersion: AGICVersion
   }
   dependsOn: [
     AppGateway
@@ -255,6 +257,7 @@ module AGIC_Helm_Install2 '../../../modules/Microsoft.Resources/AGIC_Helm_Deploy
     DeployName: DeployName2
     subResourceNamePrefix: 'clst2-'
     shared: shared
+    AGICVersion: AGICVersion
   }
   dependsOn: [
     AppGateway

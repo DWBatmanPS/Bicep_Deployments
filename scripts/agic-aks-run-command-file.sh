@@ -67,7 +67,7 @@ ClientID: ${ClientID}
 verbosityLevel: ${verbosityLevel}"
 
 echo "Sending command to AKS Cluster $aksName in $RG"
-cmdOut=$(az aks command invoke -g $RG -n $aksName --command "helm install '${DeployName}' 'oci://mcr.microsoft.com/azure-application-gateway/charts/ingress-azure' --namespace ${AGICNamespace} --version 1.7.5 --create-namespace -f ${helmValuesFileName} --debug" --file $helmValuesFileName -o json)
+cmdOut=$(az aks command invoke -g $RG -n $aksName --command "helm install '${DeployName}' 'oci://mcr.microsoft.com/azure-application-gateway/charts/ingress-azure' --namespace ${AGICNamespace} --version ${AGICVersion} --create-namespace -f ${helmValuesFileName} --debug" --file $helmValuesFileName -o json)
 echo $cmdOut
 
 jsonOutputString=$cmdOut

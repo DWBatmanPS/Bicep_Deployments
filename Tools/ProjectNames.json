@@ -3,10 +3,64 @@
     "Name": "WAF-Policy-Only"
   },
   {
+    "Name": "AGC_GRPC_Deployment"
+  },
+  {
+    "Name": "appgw_draining"
+  },
+  {
+    "Name": "Appgw_WindowsVM_WAF"
+  },
+  {
+    "Name": "AZFW_Deployment"
+  },
+  {
+    "Name": "Appgw_Webapp_backend"
+  },
+  {
+    "Name": "AGC_Deployment"
+  },
+  {
+    "Name": "AGC_Websocket_lab"
+  },
+  {
+    "Name": "Appgw_WindowsVM_Pathmapconfig"
+  },
+  {
+    "Name": "AFDx_Deployment"
+  },
+  {
+    "Name": "Appgw_Rewrites"
+  },
+  {
+    "Name": "RouteServer_NVA_VPN_to_VPN"
+  },
+  {
+    "Name": "AGIC_Helm_Upgrade"
+  },
+  {
+    "Name": "Appgw_WindowsVM_Backend"
+  },
+  {
     "Name": "Jumpbox"
   },
   {
-    "Name": "MultipleAKSClst-AGIC"
+    "Name": "netisolationappgw_complexdnslab"
+  },
+  {
+    "Name": "AGIC_StandalonePowershell"
+  },
+  {
+    "Name": "Resource_storage"
+  },
+  {
+    "Name": "Standalone_linux_box"
+  },
+  {
+    "Name": "appgw_webapp_linux_container"
+  },
+  {
+    "Name": "MutualAuthAppgw"
   },
   {
     "Name": "VWAN_Lab"
@@ -21,19 +75,19 @@
     "Name": "NVA_Lab"
   },
   {
-    "Name": "Appgw_WindowsVM_Backend"
+    "Name": "ATMmultivalue"
   },
   {
-    "Name": "Domain_resources"
+    "Name": "ATM_Exam_Lab"
   },
   {
-    "Name": "AGIC_Helm_Upgrade"
+    "Name": "Route_server_NVA_VPN"
+  },
+  {
+    "Name": "project_sneaky"
   },
   {
     "Name": "appgwWAFtoPolicy"
-  },
-  {
-    "Name": "appgwAZFW_ZeroTrustLab"
   },
   {
     "Name": "ATM_Deployment"
@@ -45,60 +99,21 @@
     "Name": "WAF-Policy-Only\n"
   },
   {
+    "Name": "Domain_resources"
+  },
+  {
     "Name": "appgwWAFtoPolicy"
   },
   {
-    "Name": "ATMmultivalue"
+    "Name": "IPFire_NVA"
   },
   {
-    "Name": "appgw_webapp_linux_container"
+    "Name": "MultipleAKSClst-AGIC"
   },
   {
-    "Name": "appgw_draining"
+    "Name": "appgwAZFW_ZeroTrustLab"
   },
   {
-    "Name": "ATM_Exam_Lab"
-  },
-  {
-    "Name": "MutualAuthAppgw"
-  },
-  {
-    "Name": "project_sneaky"
-  },
-  {
-    "Name": "netisolationappgw_complexdnslab"
-  },
-  {
-    "Name": "Appgw_WindowsVM_Pathmapconfig"
-  },
-  {
-    "Name": "AGC_GRPC_Deployment"
-  },
-  {
-    "Name": "Appgw_WindowsVM_WAF"
-  },
-  {
-    "Name": "Appgw_Rewrites"
-  },
-  {
-    "Name": "AZFW_Deployment"
-  },
-  {
-    "Name": "Appgw_Webapp_backend"
-  },
-  {
-    "Name": "AGC_Deployment"
-  },
-  {
-    "Name": "AFDx_Deployment"
-  },
-  {
-    "Name": "AGIC_StandalonePowershell"
-  },
-  {
-    "Name": "Resource_storage"
-  },
-  {
-    "Name": "Route_server_NVA_VPN"
+    "Name": "NVA_RouteServer_POC"
   }
 ]
