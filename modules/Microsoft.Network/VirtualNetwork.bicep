@@ -46,7 +46,6 @@ param natgatewayname string = 'Nat_Gateway'
 param UsecustomLocation bool = false
 param customlocation string = 'eastus'
 param add443Inbound bool = false
-param customnsgblock array = []
 
 var location = (UsecustomLocation) ? customlocation: resourceGroup().location
 var baseAddress = split(virtualNetwork_AddressPrefix, '/')[0]
@@ -148,6 +147,46 @@ var NSGAllow443 = (add443Inbound) ? [
           ]
         }
       }
+      {
+        id: resourceId('Microsoft.Network/networkSecurityGroups/securityRules', networkSecurityGroup_Default_Name, 'AllowCorpnetInbound')
+        name: 'AllowCorpnetInbound'
+        properties: {
+          description: 'Allow Corpnet Inbound'
+          protocol: '*'
+          sourcePortRange: '*'
+          sourceAddressPrefix: 'CorpNetPublic'
+          destinationAddressPrefix: 'VirtualNetwork'
+          access: 'Allow'
+          priority: 2000
+          direction: 'Inbound'
+          destinationPortRanges: [
+            '22'
+            '3389'
+            '80'
+            '443'
+          ]
+        }
+      }
+      {
+        id: resourceId('Microsoft.Network/networkSecurityGroups/securityRules', networkSecurityGroup_Default_Name, 'AllowSAWInbound')
+        name: 'AllowSAWInbound'
+        properties: {
+          description: 'Allow SAW Inbound'
+          protocol: '*'
+          sourcePortRange: '*'
+          sourceAddressPrefix: 'CorpNetSaw'
+          destinationAddressPrefix: 'VirtualNetwork'
+          access: 'Allow'
+          priority: 2010
+          direction: 'Inbound'
+          destinationPortRanges: [
+            '22'
+            '3389'
+            '80'
+            '443'
+          ]
+        }
+      }
     ]
     : [
       {
@@ -218,6 +257,46 @@ var NSGAllow443 = (add443Inbound) ? [
           direction: 'Inbound'
           destinationPortRanges: [
             '80'
+          ]
+        }
+      }
+      {
+        id: resourceId('Microsoft.Network/networkSecurityGroups/securityRules', networkSecurityGroup_Default_Name, 'AllowCorpnetInbound')
+        name: 'AllowCorpnetInbound'
+        properties: {
+          description: 'Allow Corpnet Inbound'
+          protocol: '*'
+          sourcePortRange: '*'
+          sourceAddressPrefix: 'CorpNetPublic'
+          destinationAddressPrefix: 'VirtualNetwork'
+          access: 'Allow'
+          priority: 2000
+          direction: 'Inbound'
+          destinationPortRanges: [
+            '22'
+            '3389'
+            '80'
+            '443'
+          ]
+        }
+      }
+      {
+        id: resourceId('Microsoft.Network/networkSecurityGroups/securityRules', networkSecurityGroup_Default_Name, 'AllowSAWInbound')
+        name: 'AllowSAWInbound'
+        properties: {
+          description: 'Allow SAW Inbound'
+          protocol: '*'
+          sourcePortRange: '*'
+          sourceAddressPrefix: 'CorpNetSaw'
+          destinationAddressPrefix: 'VirtualNetwork'
+          access: 'Allow'
+          priority: 2010
+          direction: 'Inbound'
+          destinationPortRanges: [
+            '22'
+            '3389'
+            '80'
+            '443'
           ]
         }
       }
@@ -295,10 +374,7 @@ resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2022-09-0
   name: networkSecurityGroup_Default_Name
   location: location
   properties: {
-    securityRules: [
-      ...NSGAllow443
-      ...customnsgblock
-    ]
+    securityRules: NSGAllow443
   }
   tags: tagValues
 }
@@ -378,6 +454,40 @@ resource networkSecurityGroup_ApplicationGateway 'Microsoft.Network/networkSecur
           destinationPortRanges: []
           sourceAddressPrefixes: []
           destinationAddressPrefixes: []
+        }
+      }
+            {
+        name: 'AllowCorpnetInbound'
+        properties: {
+          description: 'Allow Corpnet Inbound'
+          protocol: '*'
+          sourcePortRange: '*'
+          sourceAddressPrefix: 'CorpNetPublic'
+          destinationAddressPrefix: 'VirtualNetwork'
+          access: 'Allow'
+          priority: 2000
+          direction: 'Inbound'
+          destinationPortRanges: [
+            '80'
+            '443'
+          ]
+        }
+      }
+      {
+        name: 'AllowSAWInbound'
+        properties: {
+          description: 'Allow SAW Inbound'
+          protocol: '*'
+          sourcePortRange: '*'
+          sourceAddressPrefix: 'CorpNetSaw'
+          destinationAddressPrefix: 'VirtualNetwork'
+          access: 'Allow'
+          priority: 2010
+          direction: 'Inbound'
+          destinationPortRanges: [
+            '80'
+            '443'
+          ]
         }
       }
     ]
