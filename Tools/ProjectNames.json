@@ -3,9 +3,6 @@
     "Name": "WAF-Policy-Only"
   },
   {
-    "Name": "AGC_GRPC_Deployment"
-  },
-  {
     "Name": "appgw_draining"
   },
   {
@@ -24,10 +21,10 @@
     "Name": "AGC_Websocket_lab"
   },
   {
-    "Name": "Appgw_WindowsVM_Pathmapconfig"
+    "Name": "Standalone_linux_box"
   },
   {
-    "Name": "AFDx_Deployment"
+    "Name": "Appgw_WindowsVM_Pathmapconfig"
   },
   {
     "Name": "Appgw_Rewrites"
@@ -51,22 +48,22 @@
     "Name": "AGIC_StandalonePowershell"
   },
   {
+    "Name": "AFDx_Deployment"
+  },
+  {
+    "Name": "NVA_RouteServer_POC"
+  },
+  {
+    "Name": "AGC_GRPC_Deployment"
+  },
+  {
+    "Name": "AGIC_Azure_CNI_Overlay_Bicep"
+  },
+  {
     "Name": "Resource_storage"
   },
   {
-    "Name": "Standalone_linux_box"
-  },
-  {
-    "Name": "appgw_webapp_linux_container"
-  },
-  {
-    "Name": "MutualAuthAppgw"
-  },
-  {
-    "Name": "VWAN_Lab"
-  },
-  {
-    "Name": "AFDx_Premium_WAF"
+    "Name": "ATM_Deployment"
   },
   {
     "Name": "Windows_IIS_with_ILB"
@@ -87,13 +84,13 @@
     "Name": "project_sneaky"
   },
   {
-    "Name": "appgwWAFtoPolicy"
+    "Name": "MutualAuthAppgw"
   },
   {
-    "Name": "ATM_Deployment"
+    "Name": "AFDx_Premium_WAF"
   },
   {
-    "Name": "AGIC_HELM_Bicep"
+    "Name": "VWAN_Lab"
   },
   {
     "Name": "WAF-Policy-Only\n"
@@ -114,6 +111,15 @@
     "Name": "appgwAZFW_ZeroTrustLab"
   },
   {
-    "Name": "NVA_RouteServer_POC"
+    "Name": "appgwWAFtoPolicy"
+  },
+  {
+    "Name": "AGIC_HELM_Bicep"
+  },
+  {
+    "Name": "appgw_webapp_linux_container"
+  },
+  {
+    "Name": "AGIC_Azure_CNI_Failed_Deployment"
   }
 ]

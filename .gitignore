@@ -213,3 +213,5 @@ Lab_Deployments/*/*/*.yaml
 *.log.bz2
 *.log.lzma
 Lab_Deployments/AGC_Deployment/src/scratch2.azcli
+locustfile.py
+Lab_Deployments/AGC_Websocket_lab/src/requirements.txt

@@ -39,6 +39,7 @@ param subnet_Names array = [
 
 param nvaIpAddress string = '10.0.0.4'
 param deployudr bool = true
+param UDRForceTunneling bool = false
 param customsourceaddresscidr string = '8.8.8.8/32'
 param deploy_NatGateway bool = false
 param publicipname string = 'Nat_Gateway_VIP'
@@ -50,6 +51,34 @@ param add443Inbound bool = false
 var location = (UsecustomLocation) ? customlocation: resourceGroup().location
 var baseAddress = split(virtualNetwork_AddressPrefix, '/')[0]
 var baseOctets = [int (split(baseAddress, '.')[0]), int(split(baseAddress, '.')[1]), int (split(baseAddress, '.')[2]), int (split(baseAddress, '.')[3])]
+
+var routes = (UDRForceTunneling) ? [
+      { id: resourceId('Microsoft.Network/routeTables/routes', routeTable_Name, 'VirtualNetworkRoute')
+        name: 'VirtualNetworkRoute'
+        properties: {
+          addressPrefix: virtualNetwork_AddressPrefix
+          nextHopType: 'VirtualAppliance'
+          nextHopIpAddress: nvaIpAddress
+        }
+      }
+      { id: resourceId('Microsoft.Network/routeTables/routes', routeTable_Name, 'defaultRoute')
+        name: 'defaultRoute'
+        properties: {
+          addressPrefix: '0.0.0.0/0'
+          nextHopType: 'VirtualAppliance'
+          nextHopIpAddress: nvaIpAddress
+        }
+      }
+    ] : [
+      { id: resourceId('Microsoft.Network/routeTables/routes', routeTable_Name, 'VirtualNetworkRoute')
+        name: 'VirtualNetworkRoute'
+        properties: {
+          addressPrefix: virtualNetwork_AddressPrefix
+          nextHopType: 'VirtualAppliance'
+          nextHopIpAddress: nvaIpAddress
+        }
+      }
+    ]
 
 var subnetAddressPrefixes = [
   for (subnet_Name, index) in subnet_Names: {
@@ -356,16 +385,7 @@ resource routeTable 'Microsoft.Network/routeTables@2023-02-01' = if (deployudr){
   location: location
   properties: {
     disableBgpRoutePropagation: false
-    routes: [
-      { id: resourceId('Microsoft.Network/routeTables/routes', routeTable_Name, 'VirtualNetworkRoute')
-        name: 'VirtualNetworkRoute'
-        properties: {
-          addressPrefix: virtualNetwork_AddressPrefix
-          nextHopType: 'VirtualAppliance'
-          nextHopIpAddress: nvaIpAddress
-        }
-      }
-    ]
+    routes: routes
   }
   tags: tagValues
 }
