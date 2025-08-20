@@ -45,7 +45,7 @@ module vnet_module '../../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
   }
 }
 
-module agc_module '../../../modules/Microsoft.ServiceNetworking/appgw_for_containers.bicep' = {
+/* module agc_module '../../../modules/Microsoft.ServiceNetworking/appgw_for_containers.bicep' = {
   name: AGCname
   params: {
     FrontendName: 'agcFrontend'
@@ -57,7 +57,7 @@ module agc_module '../../../modules/Microsoft.ServiceNetworking/appgw_for_contai
   dependsOn: [
     vnet_module
   ]
-} 
+}  */
 
 module aks_module '../../../modules/Microsoft.ContainerService/aks_cluster.bicep' = {
   name: 'aks_deployment'
@@ -106,7 +106,7 @@ resource Sleep 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
   location: resourceGroup().location
   kind: 'AzurePowerShell'
   properties: {
-    azPowerShellVersion: '9.0'
+    azPowerShellVersion: '11.0'
     retentionInterval: 'P1D'
     scriptContent: '''
     Start-Sleep -Seconds 60
