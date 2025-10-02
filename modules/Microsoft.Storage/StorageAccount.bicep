@@ -14,6 +14,7 @@ param queue bool = true
 param table bool = true
 param web bool = true
 param enableHttpsTrafficOnly bool = true
+param enableSharedKeyAccess bool = false
 
 // Grabs the FQDN of the Blob but removes the extra that we don't need
 // Original value https://{storageAccount_Name}.blob.core.windows.net/
@@ -46,7 +47,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
     allowCrossTenantReplication: true
     minimumTlsVersion: 'TLS1_2'
     allowBlobPublicAccess: publicAccess
-    allowSharedKeyAccess: true
+    allowSharedKeyAccess: enableSharedKeyAccess
     networkAcls: {
       bypass: 'AzureServices'
       virtualNetworkRules: []

@@ -1,40 +1,39 @@
 param aksClusterName string = 'aks'
+param aksClusterName2 string = 'aks2'
 param aksClusterNodeCount int = 3
 param aksClusterNodeSize string = 'Standard_D2s_v3'
 param aksClusterKubernetesVersion string = '1.31'
-param aksdnsPrefix string 
+param aksdnsPrefix string
+param aksdnsPrefix2 string 
 param linuxadmin string
 param sshkey string = ''
 param VnetName string 
 param virtualNetwork_AddressPrefix string = '10.0.0.0/16'
 param subnet_Names array = [
   'AKSSubnet'
-  'AGSubnet'
-  'AzureFirewallSubnet'
+  'AKSSubnet2'
+  'AppGatewaySubnet'
 ]
 param akspodcidr string = '10.244.0.0/16'
 param aksserviceCidr string = '192.168.16.0/20'
 param aksinternalDNSIP string = '192.168.16.10'
+param akspodcidr2 string = '10.245.0.0/16'
+param aksserviceCidr2 string = '192.168.32.0/20'
+param aksinternalDNSIP2 string = '192.168.32.10'
 param appgwname string = 'agic-appgw'
 param publicIP_ApplicationGateway_Name string = 'agic-appgwip'
 param AGICNamespace string = 'default'
 param DeployName string = 'agic-controller'
-param azfwinternalip string = '10.0.2.4'
-param azfwsku string = 'Standard'
-param policyname string = 'aks-azfw-policy'
-param dnsenabled bool = true
-param deployudr bool = true
-param useForceTunneling bool = false
-param learnprivateranges string = 'Enabled'
-param azfw string = 'aks-firewall'
 param guid1 string = newGuid()
 param guid2 string = newGuid()
 param guid3 string = newGuid()
+param guid4 string = newGuid() 
+param guid5 string = newGuid()
+param guid6 string = newGuid()
 //param serviceprincipal_client_Id string
 
-var azfwsubnetid = resourceId('Microsoft.Network/virtualNetworks/subnets', VnetName, 'AzureFirewallSubnet')
 
-module AKSCluster '../../../modules/Microsoft.ContainerService/aks_cluster_azurecni.bicep' = {
+module AKSCluster '../../../modules/Microsoft.ContainerService/aks_cluster_azurecnioverlay.bicep' = {
   name: 'aks_deployment'
   params: {
     aksClusterName: aksClusterName
@@ -52,7 +51,27 @@ module AKSCluster '../../../modules/Microsoft.ContainerService/aks_cluster_azure
   }
   dependsOn: [
     Vnet
-    azfwdeploy
+  ]
+}
+
+module AKSCluster2 '../../../modules/Microsoft.ContainerService/aks_cluster_azurecnioverlay.bicep' = {
+  name: 'ak2s_deployment'
+  params: {
+    aksClusterName: aksClusterName2
+    aksClusterNodeCount: aksClusterNodeCount
+    aksClusterNodeSize: aksClusterNodeSize
+    aksClusterKubernetesVersion: aksClusterKubernetesVersion
+    VnetName: VnetName
+    aksdnsPrefix: aksdnsPrefix2
+    linuxadmin: linuxadmin
+    sshkey: sshkey
+    akspodCidr: akspodcidr2
+    aksserviceCidr: aksserviceCidr2
+    aksinternalDNSIP: aksinternalDNSIP2
+    aksClusterSubnetname: subnet_Names[1]
+  }
+  dependsOn: [
+    Vnet
   ]
 }
 
@@ -62,16 +81,14 @@ module Vnet '../../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
     virtualNetwork_Name: VnetName
     virtualNetwork_AddressPrefix: virtualNetwork_AddressPrefix
     subnet_Names: subnet_Names
-    nvaIpAddress: azfwinternalip
-    deployudr: deployudr
-    UDRForceTunneling: true
+    deployudr: false
   }
 }
 
 module AppGateway '../../../modules/Microsoft.Network/ApplicationGateway_v2.bicep' = {
   name: 'appgateway_deployment'
   params: {
-    applicationGateway_SubnetID: resourceId('Microsoft.Network/virtualNetworks/subnets', VnetName, subnet_Names[1])
+    applicationGateway_SubnetID: resourceId('Microsoft.Network/virtualNetworks/subnets', VnetName, subnet_Names[2])
     applicationGateway_Name: appgwname
     publicIP_ApplicationGateway_Name: publicIP_ApplicationGateway_Name
     backendPoolFQDNs: []
@@ -91,11 +108,21 @@ module ManagedID '../../../modules/Microsoft.ManagedIdentity/managed_ID_and_fede
   }
 }
 
+module ManagedID2 '../../../modules/Microsoft.ManagedIdentity/managed_ID_and_federation.bicep' = {
+  name: 'managed_identity2'
+  params: {
+    managedidentity_name: 'id-agic-${aksClusterName2}'
+    aks_oidc_issuer: AKSCluster2.outputs.aks_oidc_issuer
+    federated_id_subject: 'system:serviceaccount:${AGICNamespace}:${DeployName}-sa-ingress-azure'
+  }
+}
+
+
 module NetContribRole '../../../modules/Microsoft.Authorization/net_contrib_role.bicep' = {
   name: 'net_contrib_role'
   params: {
     vnetName: VnetName
-    Subnetname: subnet_Names[1]
+    Subnetname: subnet_Names[2]
     managedidentity_name: 'id-agic-${aksClusterName}'
     randomstring: uniqueString(guid1)
   }
@@ -119,46 +146,30 @@ module AGICRole '../../../modules/Microsoft.Authorization/agic_role.bicep' = {
   ]
 }
 
-/* module AGIC_Helm_Install '../../../modules/Microsoft.Resources/AGIC_Helm_Deployment_nofile.Bicep' = {
-  name: 'agic_helm_install'
+module NetContribRole2 '../../../modules/Microsoft.Authorization/net_contrib_role.bicep' = {
+  name: 'net_contrib_role2'
   params: {
-    aksName: AKSCluster.outputs.aks_cluster_name
-    AGICIDName: ManagedID.outputs.ManagedID_Name
-    AGICNamespace: AGICNamespace
-    AppGatewayID: appgwname
-    ClientID: ManagedID.outputs.clientID
-    DeployName: DeployName
+    vnetName: VnetName
+    Subnetname: subnet_Names[2]
+    managedidentity_name: 'id-agic-${aksClusterName2}'
+    randomstring: uniqueString(guid4)
+  }
+  dependsOn: [
+    ManagedID2
+  ]
+}
+
+module AGICRole2 '../../../modules/Microsoft.Authorization/agic_role.bicep' = {
+  name: 'agic_role2'
+  params: {
+    serviceprincipal: 'id-agic-${aksClusterName2}'
+    appgwname: appgwname
+    randomstring: uniqueString(guid5)
+    randomstring2: uniqueString(guid6)
   }
   dependsOn: [
     AppGateway
     Vnet
-    AGICRole
-    NetContribRole
-  ]
-}
- */
-
-
- module azfwpolicy '../../../modules/Microsoft.Network/AZFWPolicy.bicep' = {
-  name: policyname
-  params: {
-    policyname: policyname
-    dnsenabled: dnsenabled
-    azfwsku: azfwsku
-    learnprivaterages: learnprivateranges
-  }
-}
-
-module azfwdeploy '../../../modules/Microsoft.Network/AzureFirewall.bicep' = {
-  name: azfw
-  params: {
-    azureFirewall_Name: azfw
-    azureFirewallPolicy_ID: azfwpolicy.outputs.firewallpolicyid
-    azureFirewall_Subnet_ID: azfwsubnetid
-    azureFirewall_SKU: azfwsku
-    useForceTunneling: useForceTunneling
-  }
-  dependsOn: [
-    Vnet
+    NetContribRole2
   ]
 }

@@ -18,6 +18,9 @@ param appgwname string = 'agic-appgw'
 param publicIP_ApplicationGateway_Name string = 'agic-appgwip'
 param AGICNamespace string = 'default'
 param DeployName string = 'agic-controller'
+param guid1 string = newGuid()
+param guid2 string = newGuid()
+param guid3 string = newGuid()
 //param serviceprincipal_client_Id string
 
 
@@ -75,35 +78,13 @@ module ManagedID '../../../modules/Microsoft.ManagedIdentity/managed_ID_and_fede
   }
 }
 
-module RandomString '../../../modules/Microsoft.Resources/Random_String.Bicep' = {
-  name: 'GenerateRandomString'
-  params: {
-  }
-}
-
-module RandomString2 '../../../modules/Microsoft.Resources/Random_String.Bicep' = {
-  name: 'GenerateRandomString2'
-  params: {}
-  dependsOn: [
-    RandomString
-  ]
-}
-
-module RandomString3 '../../../modules/Microsoft.Resources/Random_String.Bicep' = {
-  name: 'GenerateRandomString3'
-  params: {}
-  dependsOn: [
-    RandomString2
-  ]
-}
-
 module NetContribRole '../../../modules/Microsoft.Authorization/net_contrib_role.bicep' = {
   name: 'net_contrib_role'
   params: {
     vnetName: VnetName
     Subnetname: subnet_Names[1]
     managedidentity_name: 'id-agic-${aksClusterName}'
-    randomstring: RandomString3.outputs.randomString
+    randomstring: uniqueString(guid1)
   }
   dependsOn: [
     ManagedID
@@ -115,8 +96,8 @@ module AGICRole '../../../modules/Microsoft.Authorization/agic_role.bicep' = {
   params: {
     serviceprincipal: 'id-agic-${aksClusterName}'
     appgwname: appgwname
-    randomstring: RandomString.outputs.randomString
-    randomstring2: RandomString2.outputs.randomString
+    randomstring: uniqueString(guid2)
+    randomstring2: uniqueString(guid3)
   }
   dependsOn: [
     AppGateway

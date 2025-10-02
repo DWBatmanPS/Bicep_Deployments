@@ -31,13 +31,18 @@ param pathmap bool = false
 param path string = '/path'
 param backendpoolpathIPAddresses array = []
 param useCustomProbe bool = false
+param usePrivateFrontend bool = false
+param useBothPrivateAndPublicFrontend bool = false
+param privatefrontendIP string = ''
 
 param tagValues object = {}
 
 @description('Application Gateway sub resource IDs')
 var frontendID = resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', applicationGateway_Name, 'fip_pub')
+var privfrontendID = (usePrivateFrontend) ? resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', applicationGateway_Name, 'fip_priv') : (useBothPrivateAndPublicFrontend) ? resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', applicationGateway_Name, 'fip_priv') : null
 var frontendPortID = (nossl) ? resourceId('Microsoft.Network/applicationGateways/frontendPorts', applicationGateway_Name, 'port_80') : resourceId('Microsoft.Network/applicationGateways/frontendPorts', applicationGateway_Name, 'port_443')
 var httpListenerID = (nossl) ? resourceId('Microsoft.Network/applicationGateways/httpListeners', applicationGateway_Name, 'http_listener') : resourceId('Microsoft.Network/applicationGateways/httpListeners', applicationGateway_Name, 'https_listener')
+var privhttpListenerID = (nossl) ? resourceId('Microsoft.Network/applicationGateways/httpListeners', applicationGateway_Name, 'http_listener_priv') : resourceId('Microsoft.Network/applicationGateways/httpListeners', applicationGateway_Name, 'https_listener_priv')
 var backendAddressPoolID = resourceId('Microsoft.Network/applicationGateways/backendAddressPools', applicationGateway_Name, 'backend_pool')
 var backendHTTPSettingsID = resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', applicationGateway_Name, 'http-settings')
 var backendHTTPSSettingsID = resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', applicationGateway_Name, 'https-settings')
@@ -61,6 +66,193 @@ var pathbackendaddresses = [
     ipAddress: backendpoolpathIPAddress
   }
 ]
+
+var frontendIPConfiguration = (usePrivateFrontend) ? [
+      {
+        name: 'fip_priv'
+        properties: {
+          privateIPAllocationMethod: 'Dynamic'
+          publicIPAddress: {
+            id: publicIP_ApplicationGateway.id
+          }
+        }
+      }
+    ] : (useBothPrivateAndPublicFrontend) ? [
+      {
+        name: 'fip_pub'
+        properties: {
+          privateIPAllocationMethod: 'Dynamic'
+          publicIPAddress: {
+            id: publicIP_ApplicationGateway.id
+          }
+        }
+      }
+      {
+        name: 'fip_priv'
+        properties: {
+          privateIPAllocationMethod: 'Static'
+          privateIPAddress: privatefrontendIP
+          subnet: {
+            id: applicationGateway_SubnetID
+          }
+        }
+      }
+    ] : [
+    {
+        name: 'fip_pub'
+        properties: {
+          privateIPAllocationMethod: 'Dynamic'
+          publicIPAddress: {
+            id: publicIP_ApplicationGateway.id
+          }
+        }
+      }
+    ]
+
+var httpListeners = (usePrivateFrontend) ? [
+      {
+        name: (nossl) ? 'http_listener' : 'https_listener'
+        properties: {
+          frontendIPConfiguration: {
+            id: frontendID
+          }
+          frontendPort: {
+            id: frontendPortID
+          }
+          protocol: (nossl) ? 'Http' : 'Https'
+          hostNames: []
+          requireServerNameIndication: false
+          sslCertificate: (nossl) ? null :{ 
+            id: resourceId('Microsoft.Network/applicationGateways/sslCertificates', applicationGateway_Name, 'danwheelerrockswildcard')
+          }
+        }
+      }
+    ] : (useBothPrivateAndPublicFrontend) ? [
+      {
+        name: (nossl) ? 'http_listener' : 'https_listener'
+        properties: {
+          frontendIPConfiguration: {
+            id: frontendID
+          }
+          frontendPort: {
+            id: frontendPortID
+          }
+          protocol: (nossl) ? 'Http' : 'Https'
+          hostNames: []
+          requireServerNameIndication: false
+          sslCertificate: (nossl) ? null :{ 
+            id: resourceId('Microsoft.Network/applicationGateways/sslCertificates', applicationGateway_Name, 'danwheelerrockswildcard')
+          }
+        }
+      }
+      {
+        name: (nossl) ? 'http_listener_priv' : 'https_listener_priv'
+        properties: {
+          frontendIPConfiguration: {
+            id: privfrontendID
+          }
+          frontendPort: {
+            id: frontendPortID
+          }
+          protocol: (nossl) ? 'Http' : 'Https'
+          hostNames: []
+          requireServerNameIndication: false
+          sslCertificate: (nossl) ? null :{ 
+            id: resourceId('Microsoft.Network/applicationGateways/sslCertificates', applicationGateway_Name, 'danwheelerrockswildcard')
+          }
+        }
+      }
+    ] : [
+      {
+        name: (nossl) ? 'http_listener' : 'https_listener'
+        properties: {
+          frontendIPConfiguration: {
+            id: frontendID
+          }
+          frontendPort: {
+            id: frontendPortID
+          }
+          protocol: (nossl) ? 'Http' : 'Https'
+          hostNames: []
+          requireServerNameIndication: false
+          sslCertificate: (nossl) ? null :{ 
+            id: resourceId('Microsoft.Network/applicationGateways/sslCertificates', applicationGateway_Name, 'danwheelerrockswildcard')
+          }
+        }
+      }
+    ]
+
+  var routingrules = (pathmap) ? [
+      {
+        name: (nossl) ? 'httproutingrule' : 'httpsroutingrule'
+        properties: {
+          ruleType: 'PathBasedRouting'
+          priority: 100
+          httpListener: {
+            id: httpListenerID
+          }
+          urlPathMap: {
+            id: resourceId('Microsoft.Network/applicationGateways/urlPathMaps', applicationGateway_Name, 'urlPathMap')
+          }
+        }
+      }
+    ] : (useBothPrivateAndPublicFrontend) ? [
+      {
+        name: (nossl) ? 'httproutingrule' : 'httpsroutingrule'
+        properties: {
+          ruleType: 'Basic'
+          priority: 100
+          httpListener: {
+            id: httpListenerID
+          }
+          backendAddressPool: {
+            id: backendAddressPoolID
+          }
+          backendHttpSettings: (isE2ESSL) ? {
+            id: backendHTTPSSettingsID
+          } :{
+            id: backendHTTPSettingsID
+          }
+        }
+      }
+      {
+        name: (nossl) ? 'privhttproutingrule' : 'privhttpsroutingrule'
+        properties: {
+          ruleType: 'Basic'
+          priority: 200
+          httpListener: {
+            id: privhttpListenerID
+          }
+          backendAddressPool: {
+            id: backendAddressPoolID
+          }
+          backendHttpSettings: (isE2ESSL) ? {
+            id: backendHTTPSSettingsID
+          } :{
+            id: backendHTTPSettingsID
+          }
+        }
+      }
+    ] : [
+      {
+        name: (nossl) ? 'httproutingrule' : 'httpsroutingrule'
+        properties: {
+          ruleType: 'Basic'
+          priority: 100
+          httpListener: {
+            id: httpListenerID
+          }
+          backendAddressPool: {
+            id: backendAddressPoolID
+          }
+          backendHttpSettings: (isE2ESSL) ? {
+            id: backendHTTPSSettingsID
+          } :{
+            id: backendHTTPSettingsID
+          }
+        }
+      }
+    ]
 
 resource applicationGatewayWAF 'Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies@2023-11-01' = if (isWAF) {
   name: applicationGatewayWAF_Name
@@ -155,17 +347,7 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2022-11-01' =
       policyType: 'Predefined'
       policyName: 'AppGwSslPolicy20220101'
     }
-    frontendIPConfigurations: [
-      {
-        name: 'fip_pub'
-        properties: {
-          privateIPAllocationMethod: 'Dynamic'
-          publicIPAddress: {
-            id: publicIP_ApplicationGateway.id
-          }
-        }
-      }
-    ]
+    frontendIPConfigurations: frontendIPConfiguration
     frontendPorts: [
       {
         name: 'port_80'
@@ -225,25 +407,7 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2022-11-01' =
         }
       }
     ]
-    httpListeners: [
-      {
-        name: (nossl) ? 'http_listener' : 'https_listener'
-        properties: {
-          frontendIPConfiguration: {
-            id: frontendID
-          }
-          frontendPort: {
-            id: frontendPortID
-          }
-          protocol: (nossl) ? 'Http' : 'Https'
-          hostNames: []
-          requireServerNameIndication: false
-          sslCertificate: (nossl) ? null :{ 
-            id: resourceId('Microsoft.Network/applicationGateways/sslCertificates', applicationGateway_Name, 'danwheelerrockswildcard')
-          }
-        }
-      }
-    ]
+    httpListeners: httpListeners
     listeners: []
     urlPathMaps: (pathmap) ? [
       {
@@ -276,40 +440,7 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2022-11-01' =
         }
       }
     ]:null
-    requestRoutingRules: (pathmap) ? [
-      {
-        name: (nossl) ? 'httproutingrule' : 'httpsroutingrule'
-        properties: {
-          ruleType: 'PathBasedRouting'
-          priority: 100
-          httpListener: {
-            id: httpListenerID
-          }
-          urlPathMap: {
-            id: resourceId('Microsoft.Network/applicationGateways/urlPathMaps', applicationGateway_Name, 'urlPathMap')
-          }
-        }
-      }
-    ] : [
-      {
-        name: (nossl) ? 'httproutingrule' : 'httpsroutingrule'
-        properties: {
-          ruleType: 'Basic'
-          priority: 100
-          httpListener: {
-            id: httpListenerID
-          }
-          backendAddressPool: {
-            id: backendAddressPoolID
-          }
-          backendHttpSettings: (isE2ESSL) ? {
-            id: backendHTTPSSettingsID
-          } :{
-            id: backendHTTPSettingsID
-          }
-        }
-      }
-    ]
+    requestRoutingRules: routingrules
     routingRules: []
     probes: (useCustomProbe) ? [
       {

@@ -26,6 +26,12 @@ param DeployName1 string = 'agic-controller'
 param DeployName2 string = 'agic-controller'
 param shared string = 'true'
 param AGICVersion string = '1.9.1'
+param guid1 string = newGuid()
+param guid2 string = newGuid()
+param guid3 string = newGuid()
+param guid4 string = newGuid()
+param guid5 string = newGuid()
+param guid6 string = newGuid()
 //param serviceprincipal_client_Id string
 
 
@@ -113,35 +119,13 @@ module ManagedID2 '../../../modules/Microsoft.ManagedIdentity/managed_ID_and_fed
   }
 }
 
-module RandomString '../../../modules/Microsoft.Resources/Random_String.Bicep' = {
-  name: 'GenerateRandomString'
-  params: {
-  }
-}
-
-module RandomString2 '../../../modules/Microsoft.Resources/Random_String.Bicep' = {
-  name: 'GenerateRandomString2'
-  params: {}
-  dependsOn: [
-    RandomString
-  ]
-}
-
-module RandomString3 '../../../modules/Microsoft.Resources/Random_String.Bicep' = {
-  name: 'GenerateRandomString3'
-  params: {}
-  dependsOn: [
-    RandomString2
-  ]
-}
-
 module NetContribRole1 '../../../modules/Microsoft.Authorization/net_contrib_role.bicep' = {
   name: 'net_contrib_role1'
   params: {
     vnetName: VnetName
     Subnetname: subnet_Names[1]
     managedidentity_name: 'id-agic-${aksClusterName1}'
-    randomstring: RandomString3.outputs.randomString
+    randomstring: uniqueString(guid1)
   }
   dependsOn: [
     ManagedID1
@@ -153,8 +137,8 @@ module AGICRole1 '../../../modules/Microsoft.Authorization/agic_role.bicep' = {
   params: {
     serviceprincipal: 'id-agic-${aksClusterName1}'
     appgwname: appgwname
-    randomstring: RandomString.outputs.randomString
-    randomstring2: RandomString2.outputs.randomString
+    randomstring: uniqueString(guid2)
+    randomstring2: uniqueString(guid3)
   }
   dependsOn: [
     AppGateway
@@ -163,27 +147,6 @@ module AGICRole1 '../../../modules/Microsoft.Authorization/agic_role.bicep' = {
   ]
 }
 
-module RandomString4 '../../../modules/Microsoft.Resources/Random_String.Bicep' = {
-  name: 'GenerateRandomString4'
-  params: {
-  }
-}
-
-module RandomString5 '../../../modules/Microsoft.Resources/Random_String.Bicep' = {
-  name: 'GenerateRandomString5'
-  params: {}
-  dependsOn: [
-    RandomString4
-  ]
-}
-
-module RandomString6 '../../../modules/Microsoft.Resources/Random_String.Bicep' = {
-  name: 'GenerateRandomString6'
-  params: {}
-  dependsOn: [
-    RandomString5
-  ]
-}
 
 module NetContribRole2 '../../../modules/Microsoft.Authorization/net_contrib_role.bicep' = {
   name: 'net_contrib_role2'
@@ -191,7 +154,7 @@ module NetContribRole2 '../../../modules/Microsoft.Authorization/net_contrib_rol
     vnetName: VnetName
     Subnetname: subnet_Names[1]
     managedidentity_name: 'id-agic-${aksClusterName2}'
-    randomstring: RandomString6.outputs.randomString
+    randomstring: uniqueString(guid4)
   }
   dependsOn: [
     ManagedID2
@@ -203,8 +166,8 @@ module AGICRole2 '../../../modules/Microsoft.Authorization/agic_role.bicep' = {
   params: {
     serviceprincipal: 'id-agic-${aksClusterName1}'
     appgwname: appgwname
-    randomstring: RandomString4.outputs.randomString
-    randomstring2: RandomString5.outputs.randomString
+    randomstring: uniqueString(guid5)
+    randomstring2: uniqueString(guid6)
   }
   dependsOn: [
     AppGateway

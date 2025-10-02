@@ -3,9 +3,6 @@
     "Name": "WAF-Policy-Only"
   },
   {
-    "Name": "appgw_draining"
-  },
-  {
     "Name": "Appgw_WindowsVM_WAF"
   },
   {
@@ -27,13 +24,13 @@
     "Name": "Appgw_WindowsVM_Pathmapconfig"
   },
   {
+    "Name": "AGIC_Azure_CNI_Failed_Deployment"
+  },
+  {
+    "Name": "appgw_draining"
+  },
+  {
     "Name": "Appgw_Rewrites"
-  },
-  {
-    "Name": "RouteServer_NVA_VPN_to_VPN"
-  },
-  {
-    "Name": "AGIC_Helm_Upgrade"
   },
   {
     "Name": "Appgw_WindowsVM_Backend"
@@ -57,16 +54,19 @@
     "Name": "AGC_GRPC_Deployment"
   },
   {
+    "Name": "RouteServer_NVA_VPN_to_VPN"
+  },
+  {
+    "Name": "AGIC_Helm_Upgrade"
+  },
+  {
+    "Name": "appgw_private_public_lab"
+  },
+  {
     "Name": "AGIC_Azure_CNI_Overlay_Bicep"
   },
   {
-    "Name": "Resource_storage"
-  },
-  {
     "Name": "ATM_Deployment"
-  },
-  {
-    "Name": "Windows_IIS_with_ILB"
   },
   {
     "Name": "NVA_Lab"
@@ -93,10 +93,10 @@
     "Name": "VWAN_Lab"
   },
   {
-    "Name": "WAF-Policy-Only\n"
+    "Name": "Resource_storage"
   },
   {
-    "Name": "Domain_resources"
+    "Name": "WAF-Policy-Only\n"
   },
   {
     "Name": "appgwWAFtoPolicy"
@@ -120,6 +120,12 @@
     "Name": "appgw_webapp_linux_container"
   },
   {
-    "Name": "AGIC_Azure_CNI_Failed_Deployment"
+    "Name": "Windows_IIS_with_ILB"
+  },
+  {
+    "Name": "Domain_resources"
+  },
+  {
+    "Name": "multiAKS_Lab"
   }
 ]

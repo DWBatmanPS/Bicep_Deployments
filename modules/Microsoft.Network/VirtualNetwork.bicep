@@ -348,7 +348,7 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2024-05-01' = {
         name: subnetAddressPrefixes[index].name
         properties: {
           addressPrefix: subnetAddressPrefixes[index].addressPrefix
-          networkSecurityGroup: (subnet_Name != 'AGCSubnet' && subnet_Name != 'AzureFirewallSubnet' && subnet_Name != 'AzureFirewallManagementSubnet' && subnet_Name != 'GatewaySubnet' && subnet_Name != 'AGSubnet' && subnet_Name != 'AzureBastionSubnet' && subnet_Name != 'AKSSubnet' && subnet_Name != 'RouteServerSubnet') ? {
+          networkSecurityGroup: (subnet_Name != 'AGCSubnet' && subnet_Name != 'AzureFirewallSubnet' && subnet_Name != 'AzureFirewallManagementSubnet' && subnet_Name != 'GatewaySubnet' && subnet_Name != 'AGSubnet' && subnet_Name != 'AzureBastionSubnet' && subnet_Name != 'AKSSubnet' && subnet_Name != 'RouteServerSubnet' && subnet_Name != 'AGSubnet_noNSG') ? {
             id: networkSecurityGroup.id
           } : (subnet_Name == 'AGSubnet') ? {
             id:networkSecurityGroup_ApplicationGateway.id
