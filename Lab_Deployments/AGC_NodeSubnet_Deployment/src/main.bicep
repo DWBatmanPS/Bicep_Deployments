@@ -21,16 +21,12 @@ param managedidnamebase string = 'aksmanagedidentity'
 param currentUtcTime string = utcNow()
 param guid1 string = newGuid()
 param guid2 string = newGuid()
-param guid3 string = newGuid()
-param resourceGroupName string  = 'AGC_ResourceGroup'
-param iteration string = '01'
 
 var agcSubnetId = resourceId('Microsoft.Network/virtualNetworks/subnets', VnetName, subnet_Names[1])
 var utctimehash = uniqueString(currentUtcTime)
 var managedident_fullname = '${utctimehash}${managedidnamebase}'
 var managedidentity_name = substring(managedident_fullname, 0, 15)
 var federated_id_subject = 'system:serviceaccount:azure-alb-system:alb-controller-sa'
-var agc_role = 'fbc52c3f-28ad-4303-a892-8a056630b8f1'
 
 module vnet_module '../../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
   name: VnetName
@@ -57,7 +53,7 @@ module agc_module '../../../modules/Microsoft.ServiceNetworking/appgw_for_contai
   ]
 }  
 
-module aks_module '../../../modules/Microsoft.ContainerService/aks_cluster.bicep' = {
+module aks_module '../../../modules/Microsoft.ContainerService/aks_cluster_azurecni_nodesubnet.bicep' = {
   name: 'aks_deployment'
   params: {
     aksClusterName: aksClusterName
@@ -72,7 +68,6 @@ module aks_module '../../../modules/Microsoft.ContainerService/aks_cluster.bicep
     aksserviceCidr: aksserviceCidr
     aksinternalDNSIP: aksinternalDNSIP
     aksClusterSubnetname: subnet_Names[0]
-    useOverlay: true
   }
   dependsOn: [
     vnet_module
@@ -116,16 +111,3 @@ module net_authorizations '../../../modules/Microsoft.Authorization/net_contrib_
     vnet_module
   ]
 }
-
-module authorizationsManagedRG '../../../modules/Microsoft.Authorization/aks_managed_rg_AGC.bicep' = {
-  name: 'agc_roles_managed_RG'
-  scope: resourceGroup('mc_${resourceGroupName}_${iteration}_${aksClusterName}_${resourceGroup().location}')
-  params: {
-    managedidentity_name: managedidentity_name
-    randomString: uniqueString(guid3)
-  }
-  dependsOn: [
-    managed_identity
-    aks_module
-  ]
-} 

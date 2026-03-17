@@ -1,0 +1,39 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "RGName1": {
+      "value": "ATM-CANCEN-13"
+    },
+    "DeploymentLocation1": {
+      "value": "Canada Central"
+    },
+    "RGName2": {
+      "value": "ATM-WUS-13"
+    },
+    "DeploymentLocation2": {
+      "value": "West US"
+    },
+    "RGName3": {
+      "value": "ATM-CUS-13"
+    },
+    "DeploymentLocation3": {
+      "value": "Central US"
+    },
+    "ATM_Name": {
+      "value": "bicep-atm-profile"
+    },
+    "RoutingMethod": {
+      "value": "Performance"
+    },
+    "probeProtocol": {
+      "value": "HTTPS"
+    },
+    "initials": {
+      "value": "DW"
+    },
+    "desiredLength": {
+      "value": 8
+    }
+  }
+}

@@ -370,7 +370,14 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2024-05-01' = {
                 serviceName: 'Microsoft.Network/applicationGateways'
               }
             }
-          ] : null
+          ] : (subnet_Name == 'PrivAGSubnet') ? [
+            {
+              name: 'Microsoft.Network/applicationGateways'
+              properties: {
+                serviceName: 'Microsoft.Network/applicationGateways'
+              }
+            }
+          ] :null
           natGateway: (deploy_NatGateway && deployudr != true && (subnet_Name != 'AzureFirewallSubnet' && subnet_Name != 'AzureFirewallManagementSubnet' && subnet_Name != 'GatewaySubnet' && subnet_Name != 'AGCSubnet' && subnet_Name != 'AGSubnet' && subnet_Name != 'AzureBastionSubnet' && subnet_Name != 'RouteServerSubnet')) ? {
             id: natgateway.id
           } : null

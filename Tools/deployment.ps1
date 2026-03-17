@@ -18,7 +18,9 @@ param(
     
     [bool]$DeployWithParamFile = $true,
 
-    [bool]$Debuglog = $false
+    [bool]$Debuglog = $false,
+
+    [bool]$UseIteration = $false
 )
 
 # Verifies that AzContext is set and displays the subscription information to where this deployment will be completed.
@@ -42,6 +44,23 @@ $subscriptioncontextsearchString = "targetScope = 'subscription'"
 # Use Select-String to search for the string in the file
 $searchResult = Select-String -Path $mainBicepFile -Pattern $subscriptioncontextsearchString
 
+function Update-IterationParam {
+    param(
+        [string]$ParamFilePath,
+        [int]$IterationValue
+    )
+    if (!(Test-Path $ParamFilePath)) { return }
+    $raw = Get-Content -Path $ParamFilePath -Raw
+    $pattern = "param\s+iteration\s*=\s*'[^']*'"
+    if ($raw -match $pattern) {
+        $raw = [regex]::Replace($raw, $pattern, "param iteration = '$IterationValue'")
+    } else {
+        if ($raw.Trim().Length -gt 0) { $raw = "$raw`nparam iteration = '$IterationValue'" } else { $raw = "param iteration = '$IterationValue'" }
+    }
+    Set-Content -Path $ParamFilePath -Value $raw
+    Write-Host "Updated iteration parameter to $IterationValue in $ParamFilePath"
+}
+
 # Check if the string was found and output the result
 if ($searchResult) {
     Write-Host "This deployment is a subscription level deployment"
@@ -50,6 +69,8 @@ if ($searchResult) {
     Write-Output "This deployment is a resource group level deployment"
 	$subleveldeployment = $false
 }
+
+
 
 if ($subleveldeployment) {
     # Switches off the Parameter file option in the deployment if the parameter file does not exist
@@ -61,6 +82,10 @@ if ($subleveldeployment) {
     if (Test-Path $iterationFile) {
         $iteration = [int](Get-Content $iterationFile)
         $rgName = "${DeploymentName}_RG_${iteration}"
+
+        if ($UseIteration -and (Test-Path $mainParameterFile)) {
+        Update-IterationParam -ParamFilePath $mainParameterFile -IterationValue $iteration
+    }
     }
     else {
         $iteration = 1
@@ -68,8 +93,13 @@ if ($subleveldeployment) {
         Set-Content -Path $iterationFile -Value "${iteration}"
         $iteration = [int](Get-Content $iterationFile)
         $rgName = "${DeploymentName}_RG_${iteration}"
+
+        if ($UseIteration -and (Test-Path $mainParameterFile)) {
+        Update-IterationParam -ParamFilePath $mainParameterFile -IterationValue $iteration
+        }
     }
 
+    
     # Define the regex pattern to match all RGName parameters
     $pattern = "(param\s+RGName\d+\s*=\s*')([^']*?)-?(\d*)?'"
 
@@ -165,12 +195,20 @@ else{
     if (Test-Path $iterationFile) {
         $iteration = [int](Get-Content $iterationFile)
         $rgName = "${DeploymentName}_RG_${iteration}"
+
+        if ($UseIteration -and (Test-Path $mainParameterFile)) {
+        Update-IterationParam -ParamFilePath $mainParameterFile -IterationValue $iteration
+        }
     }
     else {
         $iteration = 1
         New-Item -ItemType File -Path $iterationFile
         Set-Content -Path $iterationFile -Value "${iteration}"
         $rgName = "${DeploymentName}_RG_${iteration}"
+
+        if ($UseIteration -and (Test-Path $mainParameterFile)) {
+        Update-IterationParam -ParamFilePath $mainParameterFile -IterationValue $iteration
+        }
     }
 
     if (Get-AzResourceGroup -Name $rgName -ErrorAction SilentlyContinue) {

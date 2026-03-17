@@ -11,31 +11,12 @@ param akspodCidr string
 param aksserviceCidr string
 param aksinternalDNSIP string
 param linuxadmin string = 'AKSAdmin'
-param useOverlay bool = false
 
 var substringLength = 10
 var actualLength = length(aksClusterName) < substringLength ? length(aksClusterName) : substringLength
 var aksClusterLocation = resourceGroup().location
 var aksClusterSubnetId = resourceId('Microsoft.Network/virtualNetworks/subnets', VnetName, aksClusterSubnetname)
 var truncatedagentpoolname = substring(aksClusterName, 0, actualLength)
-var networkProfile = useOverlay ? {
-      loadBalancerSku: 'standard'
-      networkPlugin: 'azure'
-      networkPolicy: 'azure'
-      networkPluginMode: 'overlay'
-      outboundType: 'loadBalancer'
-      podCidr: akspodCidr
-      serviceCidr: aksserviceCidr
-      dnsServiceIP: aksinternalDNSIP
-    } : {
-      loadBalancerSku: 'standard'
-      networkPlugin: 'azure'
-      networkPolicy: 'none'
-      outboundType: 'loadBalancer'
-      podCidr: akspodCidr
-      serviceCidr: aksserviceCidr
-      dnsServiceIP: aksinternalDNSIP
-    }
 
 resource k8s 'Microsoft.ContainerService/managedClusters@2024-06-02-preview' = {
   name: aksClusterName
@@ -65,7 +46,15 @@ resource k8s 'Microsoft.ContainerService/managedClusters@2024-06-02-preview' = {
         ]
       }
     }
-    networkProfile: networkProfile
+    networkProfile: {
+      loadBalancerSku: 'standard'
+      networkPlugin: 'azure'
+      networkPolicy: 'azure'
+      outboundType: 'loadBalancer'
+      podCidr: akspodCidr
+      serviceCidr: aksserviceCidr
+      dnsServiceIP: aksinternalDNSIP
+    }
     oidcIssuerProfile: {
       enabled: true
     }
@@ -78,9 +67,8 @@ resource k8s 'Microsoft.ContainerService/managedClusters@2024-06-02-preview' = {
 }
 
 
-
+output aksManagedRG string = k8s.properties.nodeResourceGroup
 output controlPlaneFQDN string = k8s.properties.fqdn
 output aks_oidc_issuer string = k8s.properties.oidcIssuerProfile.issuerURL
 output aks_cluster_id string = k8s.id
 output aks_cluster_name string = k8s.name
-output aks_cluster_managed_rg string = k8s.properties.nodeResourceGroup

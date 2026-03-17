@@ -71,10 +71,8 @@ var frontendIPConfiguration = (usePrivateFrontend) ? [
       {
         name: 'fip_priv'
         properties: {
-          privateIPAllocationMethod: 'Dynamic'
-          publicIPAddress: {
-            id: publicIP_ApplicationGateway.id
-          }
+          privateIPAllocationMethod: 'Static'
+          privateIPAddress: privatefrontendIP
         }
       }
     ] : (useBothPrivateAndPublicFrontend) ? [

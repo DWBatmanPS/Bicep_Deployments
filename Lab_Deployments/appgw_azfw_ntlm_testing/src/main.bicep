@@ -34,6 +34,8 @@ param useForceTunneling bool = false
 param homeip string = '208.107.184.241/32'
 param deployudr bool = true
 param azfwinternalip string = '10.0.1.4'
+param scriptLocation string = 'https://raw.githubusercontent.com/danwheeler-microsoft/Bicep_Labs/main/SharedScripts/'
+param scriptFileName string = 'Configure-AZFW-Ntlm.ps1'
 
 var azfwsubnetid = resourceId('Microsoft.Network/virtualNetworks/subnets', virtualNetworkName2, 'AzureFirewallSubnet')
 //var dnsServers = [
@@ -84,12 +86,15 @@ module appgw '../../../modules/Microsoft.Network/ApplicationGateway_v2.bicep' = 
   name: applicationGateWayName
   params: {
     applicationGateway_Name: applicationGateWayName
-    applicationGateway_SubnetID: resourceId('Microsoft.Network/virtualNetworks/subnets', virtualNetworkName, 'AppGateway')
+    applicationGateway_SubnetID: resourceId('Microsoft.Network/virtualNetworks/subnets', virtualNetworkName, 'AGSubnet')
     publicIP_ApplicationGateway_Name: publicIPAddressName
     keyVaultName: keyVaultName
     keyvault_managed_ID: keyvault_managed_ID
     certname: certname
-    isWAF: true
+    isWAF: false
+    usePrivateFrontend: false
+    useBothPrivateAndPublicFrontend: true
+    privatefrontendIP: '10.0.0.250'
     backendPoolFQDNs: []
     tagValues: {}
   }
@@ -145,3 +150,25 @@ module vm '../../../modules/Microsoft.Compute/WindowsServer2022/VirtualMachine.b
   ]
 }
 
+module vm2 '../../../modules/Microsoft.Compute/WindowsServer2022/VirtualMachine.bicep' = {
+  name: 'dwwebapp2'
+  params: {
+    virtualMachine_Name: 'dwwebapp'
+    virtualMachine_Size: 'Standard_D2s_v3'
+    networkInterface_Name: 'dwwebapp-nic'
+    subnet_ID: resourceId('Microsoft.Network/virtualNetworks/subnets', virtualNetworkName, 'backendSubnet')
+    acceleratedNetworking: false
+    addPublicIPAddress: false
+    privateIPAllocationMethod: 'Static'
+    privateIPAddress: '10.0.2.6'
+    commandToExecute: 'powershell -ExecutionPolicy Unrestricted -File automate-iis.ps1'
+    virtualMachine_AdminPassword: 'Password1234!'
+    virtualMachine_AdminUsername: 'danwheeler'
+    virtualMachine_ScriptFileLocation: scriptLocation
+    virtualMachine_ScriptFileName: scriptFileName
+    tagValues: {}
+  }
+  dependsOn: [
+    virtualNetwork
+  ]
+}
