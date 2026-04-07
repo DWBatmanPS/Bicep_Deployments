@@ -217,3 +217,5 @@ locustfile.py
 Lab_Deployments/AGC_Websocket_lab/src/requirements.txt
 *.logs
 *.log
+Lab_Deployments/AGCBYO_Helm/AGCBYO_Helm-deployment.ps1
+Lab_Deployments/AGCBYO_Helm/src/temp.bash

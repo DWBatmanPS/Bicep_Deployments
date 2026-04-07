@@ -3,6 +3,78 @@
     "Name": "WAF-Policy-Only"
   },
   {
+    "Name": "project_sneaky"
+  },
+  {
+    "Name": "MutualAuthAppgw"
+  },
+  {
+    "Name": "AFDx_Premium_WAF"
+  },
+  {
+    "Name": "VWAN_Lab"
+  },
+  {
+    "Name": "Resource_storage"
+  },
+  {
+    "Name": "NVA_Lab"
+  },
+  {
+    "Name": "WAF-Policy-Only\n"
+  },
+  {
+    "Name": "appgw_private_public_lab"
+  },
+  {
+    "Name": "ATM_Deployment"
+  },
+  {
+    "Name": "Route_server_NVA_VPN"
+  },
+  {
+    "Name": "ATM_Exam_Lab"
+  },
+  {
+    "Name": "AGIC_HELM_Bicep"
+  },
+  {
+    "Name": "appgw_webapp_linux_container"
+  },
+  {
+    "Name": "Windows_IIS_with_ILB"
+  },
+  {
+    "Name": "Domain_resources"
+  },
+  {
+    "Name": "appgwWAFtoPolicy"
+  },
+  {
+    "Name": "AGIC_Azure_CNI_Overlay_Bicep"
+  },
+  {
+    "Name": "ATMmultivalue"
+  },
+  {
+    "Name": "MultipleAKSClst-AGIC"
+  },
+  {
+    "Name": "IPFire_NVA"
+  },
+  {
+    "Name": "appgwWAFtoPolicy"
+  },
+  {
+    "Name": "appgwAZFW_ZeroTrustLab"
+  },
+  {
+    "Name": "AGC_WAF_Lab"
+  },
+  {
+    "Name": "netisolationappgw_complexdnslab"
+  },
+  {
     "Name": "Appgw_Webapp_backend"
   },
   {
@@ -30,10 +102,10 @@
     "Name": "AGC_NodeSubnet_Deployment"
   },
   {
-    "Name": "AZFW_Deployment"
+    "Name": "appgw_azfw_ntlm_testing"
   },
   {
-    "Name": "Appgw_WindowsVM_Backend"
+    "Name": "AZFW_Deployment"
   },
   {
     "Name": "AGIC_StandalonePowershell"
@@ -63,81 +135,12 @@
     "Name": "Jumpbox"
   },
   {
-    "Name": "netisolationappgw_complexdnslab"
-  },
-  {
-    "Name": "appgw_azfw_ntlm_testing"
-  },
-  {
-    "Name": "AGC_WAF_Lab"
-  },
-  {
-    "Name": "ATM_Deployment"
-  },
-  {
-    "Name": "ATM_Exam_Lab"
-  },
-  {
-    "Name": "Route_server_NVA_VPN"
-  },
-  {
-    "Name": "project_sneaky"
-  },
-  {
-    "Name": "MutualAuthAppgw"
-  },
-  {
-    "Name": "AFDx_Premium_WAF"
-  },
-  {
-    "Name": "VWAN_Lab"
-  },
-  {
-    "Name": "Resource_storage"
-  },
-  {
-    "Name": "NVA_Lab"
-  },
-  {
-    "Name": "WAF-Policy-Only\n"
-  },
-  {
-    "Name": "appgw_private_public_lab"
-  },
-  {
-    "Name": "IPFire_NVA"
-  },
-  {
-    "Name": "appgwAZFW_ZeroTrustLab"
-  },
-  {
-    "Name": "appgwWAFtoPolicy"
-  },
-  {
-    "Name": "AGIC_HELM_Bicep"
-  },
-  {
-    "Name": "appgw_webapp_linux_container"
-  },
-  {
-    "Name": "Windows_IIS_with_ILB"
-  },
-  {
-    "Name": "Domain_resources"
-  },
-  {
-    "Name": "appgwWAFtoPolicy"
-  },
-  {
-    "Name": "AGIC_Azure_CNI_Overlay_Bicep"
-  },
-  {
-    "Name": "ATMmultivalue"
-  },
-  {
-    "Name": "MultipleAKSClst-AGIC"
+    "Name": "Appgw_WindowsVM_Backend"
   },
   {
     "Name": "appgw_ntlm_auth"
+  },
+  {
+    "Name": "AGCBYO_Helm"
   }
 ]
