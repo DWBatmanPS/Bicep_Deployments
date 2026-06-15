@@ -41,7 +41,7 @@ module appgw '../../../modules/Microsoft.Network/ApplicationGateway_v2.bicep' = 
     keyVaultName: keyVaultName
     keyvault_managed_ID: keyvault_managed_ID
     certname: certname
-    isWAF: false
+    isWAF: true
     isE2ESSL: true
     backendPoolFQDNs: [
       '${Webapp.outputs.website_FQDN}'

@@ -37,6 +37,7 @@ $deploymentFilePath = ".\Lab_Deployments\${DeploymentName}"
 $mainBicepFile = "${deploymentFilePath}\src\main.bicep"
 $mainParameterFile = "${deploymentFilePath}\src\main.bicepparam"
 $iterationFile = "${deploymentFilePath}\iteration.txt"
+$debugLogFile = Join-Path -Path $deploymentFilePath -ChildPath "src\debuglog.txt"
 
 # Define the search string for a sub level deployment
 $subscriptioncontextsearchString = "targetScope = 'subscription'"
@@ -72,7 +73,7 @@ if ($searchResult) {
 
 
 
-if ($subleveldeployment) {
+if ($subleveldeployment -eq $True) {
     # Switches off the Parameter file option in the deployment if the parameter file does not exist
     if (!(Test-Path $mainParameterFile)) {
         Write-Host "Parameters file does not exist. This is required for subscription level deployments. Please create the parameters file and try again."
@@ -149,7 +150,7 @@ if ($subleveldeployment) {
     $stopwatch = [system.diagnostics.stopwatch]::StartNew()
     Write-Host "`nStarting Bicep Deployment.  Process began at: $(Get-Date -Format "HH:mm K")`n"
 
-    if ($Debuglog -eq $true) {
+    if ($Debuglog) {
         $DebugDeployment = $false
         Write-Host "Deployment Version: $DeploymentVersion"
         Write-Host "Location: $Location"
@@ -165,11 +166,10 @@ if ($subleveldeployment) {
         elseif ($response -eq "Y") {
             Write-Host "Starting deployment."
             $DebugDeployment = $true
-            $job = Start-Job -ScriptBlock { 
-                param($DeploymentVersion, $Location, $mainBicepFile, $mainParameterFile)  New-AzDeployment -name $DeploymentVersion -Location $Location -TemplateFile $mainBicepFile -TemplateParameterFile $mainParameterFile -DeploymentDebugLogLevel All }-ArgumentList $$DeploymentVersion, $Location, $mainBicepFile, $mainParameterFile
-                $JobID = $Job.Id
-                $job | Wait-Job
-                Receive-Job -Id $JobID | Out-File ${deploymentFilePath}\src\debuglog.txt
+            $prevDebugPreference = $DebugPreference
+            $DebugPreference = 'Continue'
+            New-AzDeployment -Name $DeploymentVersion -Location $Location -TemplateFile $mainBicepFile -TemplateParameterFile $mainParameterFile -DeploymentDebugLogLevel All -Verbose *> $debugLogFile
+            $DebugPreference = $prevDebugPreference
         }
         else {
             Write-Host "Invalid response.  Canceling Deploment.."
@@ -276,12 +276,10 @@ else{
             elseif ($response -eq "Y") {
                 Write-Host "Starting deployment."
                 $DebugDeployment = $true
-                $job = Start-Job -ScriptBlock {
-                    param($rgName, $mainBicepFile, $mainParameterFile) New-AzResourceGroupDeployment -ResourceGroupName $rgName -TemplateFile $mainBicepFile -TemplateParameterFile $mainParameterFile -DeploymentDebugLogLevel "All" -Verbose
-            } -ArgumentList $rgName, $mainBicepFile, $mainParameterFile
-                $JobID = $Job.Id
-                $job | Wait-Job
-                Receive-Job -Id $JobID | Out-File ${deploymentFilePath}\src\debuglog.txt
+                $prevDebugPreference = $DebugPreference
+                $DebugPreference = 'Continue'
+                New-AzResourceGroupDeployment -ResourceGroupName $rgName -TemplateFile $mainBicepFile -TemplateParameterFile $mainParameterFile -DeploymentDebugLogLevel "All" -Verbose *> $debugLogFile
+                $DebugPreference = $prevDebugPreference
             }
             else {
                 Write-Host "Invalid response.  Canceling Deploment.."
@@ -309,13 +307,10 @@ else{
             elseif ($response -eq "Y") {
                 Write-Host "Starting deployment."
                 $DebugDeployment = $true
-                New-AzResourceGroupDeployment -ResourceGroupName $rgName -TemplateFile $mainBicepFile -DeploymentDebugLogLevel "All"
-                $job = Start-Job -ScriptBlock {
-                    param($rgName, $mainBicepFile)
-                    New-AzResourceGroupDeployment -ResourceGroupName $rgName -TemplateFile $mainBicepFile -DeploymentDebugLogLevel "All" -Verbose } -ArgumentList $rgName, $mainBicepFile
-                $JobID = $Job.Id
-                $job | Wait-Job
-                Receive-Job -Id $JobID | Out-File ${deploymentFilePath}\src\debuglog.txt
+                $prevDebugPreference = $DebugPreference
+                $DebugPreference = 'Continue'
+                New-AzResourceGroupDeployment -ResourceGroupName $rgName -TemplateFile $mainBicepFile -DeploymentDebugLogLevel "All" -Verbose *> $debugLogFile
+                $DebugPreference = $prevDebugPreference
             }
             else {
                 Write-Host "Invalid response.  Canceling Deploment.."

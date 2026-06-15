@@ -11,11 +11,11 @@ resource applicationGatewayWAF 'Microsoft.Network/ApplicationGatewayWebApplicati
     customRules: []
     policySettings: {
       requestBodyCheck: true
-      maxRequestBodySizeInKb: 128
-      fileUploadLimitInMb: 100
+      maxRequestBodySizeInKb: 2048
+      fileUploadLimitInMb: 50
       state: 'Enabled'
       mode: 'Prevention'
-      requestBodyInspectLimitInKB: 128
+      requestBodyInspectLimitInKB: 2048
       fileUploadEnforcement: true
       requestBodyEnforcement: true
     }
@@ -28,7 +28,7 @@ resource applicationGatewayWAF 'Microsoft.Network/ApplicationGatewayWebApplicati
         }
         {
           ruleSetType: 'Microsoft_BotManagerRuleSet'
-          ruleSetVersion: '0.1'
+          ruleSetVersion: '1.1'
           ruleGroupOverrides: []
         }
       ]

@@ -54,7 +54,7 @@ module agc_module '../../../modules/Microsoft.ServiceNetworking/appgw_for_contai
   ]
 } 
 
-module aks_module '../../../modules/Microsoft.ContainerService/aks_cluster.bicep' = {
+module aks_module '../../../modules/Microsoft.ContainerService/aks_cluster_legacy_cilium.bicep' = {
   name: 'aks_deployment'
   params: {
     aksClusterName: aksClusterName
