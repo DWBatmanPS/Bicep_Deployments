@@ -73,6 +73,9 @@ var frontendIPConfiguration = (usePrivateFrontend) ? [
         properties: {
           privateIPAllocationMethod: 'Static'
           privateIPAddress: privatefrontendIP
+          subnet: {
+            id: applicationGateway_SubnetID
+          }
         }
       }
     ] : (useBothPrivateAndPublicFrontend) ? [
@@ -112,7 +115,7 @@ var httpListeners = (usePrivateFrontend) ? [
         name: (nossl) ? 'http_listener' : 'https_listener'
         properties: {
           frontendIPConfiguration: {
-            id: frontendID
+            id: privfrontendID
           }
           frontendPort: {
             id: frontendPortID

@@ -1,0 +1,2068 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.41.2.15936",
+      "templateHash": "9287416475846172124"
+    }
+  },
+  "parameters": {
+    "virtualNetworkName": {
+      "type": "string",
+      "defaultValue": "appgw-priv-ssloffload-vnet"
+    },
+    "virtualNetworkPrefix": {
+      "type": "string",
+      "defaultValue": "10.0.0.0/16"
+    },
+    "subnet_Names": {
+      "type": "array",
+      "defaultValue": [
+        "ApplicationGatewaySubnet",
+        "BackendSubnet",
+        "ClientSubnet",
+        "AzureBastionSubnet"
+      ]
+    },
+    "appGatewaySubnetName": {
+      "type": "string",
+      "defaultValue": "ApplicationGatewaySubnet"
+    },
+    "backendSubnetName": {
+      "type": "string",
+      "defaultValue": "BackendSubnet"
+    },
+    "clientSubnetName": {
+      "type": "string",
+      "defaultValue": "ClientSubnet"
+    },
+    "applicationGateWayName": {
+      "type": "string",
+      "defaultValue": "appgw-priv-ssloffload"
+    },
+    "publicIPAddressName": {
+      "type": "string",
+      "defaultValue": "appgw-priv-ssloffload-pip"
+    },
+    "privatefrontendIP": {
+      "type": "string",
+      "defaultValue": "10.0.0.250"
+    },
+    "certname": {
+      "type": "string",
+      "defaultValue": "danwheeler-cert"
+    },
+    "keyVaultName": {
+      "type": "string",
+      "defaultValue": "danwheeler-awoxs5-kv"
+    },
+    "keyvault_managed_ID": {
+      "type": "string",
+      "defaultValue": "DWKeyVaultManagedIdentity"
+    },
+    "backendVMName": {
+      "type": "string",
+      "defaultValue": "iisbackend"
+    },
+    "clientVMName": {
+      "type": "string",
+      "defaultValue": "clientvm"
+    },
+    "VMSize": {
+      "type": "string",
+      "defaultValue": "Standard_D2s_v3"
+    },
+    "VMAdminUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "Admin username for both the backend and client VMs. Supplied at deploy time."
+      }
+    },
+    "VMAdminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Admin password for both the backend and client VMs. Supplied at deploy time."
+      }
+    },
+    "bastionName": {
+      "type": "string",
+      "defaultValue": "appgw-priv-ssloffload-bastion"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "[parameters('virtualNetworkName')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "virtualNetwork_Name": {
+            "value": "[parameters('virtualNetworkName')]"
+          },
+          "virtualNetwork_AddressPrefix": {
+            "value": "[parameters('virtualNetworkPrefix')]"
+          },
+          "subnet_Names": {
+            "value": "[parameters('subnet_Names')]"
+          },
+          "deployudr": {
+            "value": false
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.41.2.15936",
+              "templateHash": "16351158612377496942"
+            }
+          },
+          "parameters": {
+            "virtualNetwork_Name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Virtual Network"
+              }
+            },
+            "dnsServers": {
+              "type": "array",
+              "defaultValue": [],
+              "metadata": {
+                "description": "An Array of Custom DNS Server IP Addresses.  Azure Wireserver will be used if left as an empty array [].\nExample:\n[10.0.0.4, 10.0.0.5]\n"
+              }
+            },
+            "virtualNetwork_AddressPrefix": {
+              "type": "string"
+            },
+            "tagValues": {
+              "type": "object",
+              "defaultValue": {}
+            },
+            "subnet_Names": {
+              "type": "array",
+              "defaultValue": [
+                "General",
+                "PrivateEndpoints",
+                "PrivateLinkService",
+                "ApplicationGatewaySubnet",
+                "AGCSubnet",
+                "AppServiceSubnet",
+                "GatewaySubnet",
+                "AzureFirewallSubnet",
+                "AzureFirewallManagementSubnet",
+                "AzureBastionSubnet",
+                "PrivateResolver_Inbound",
+                "PrivateResolver_Outbound",
+                "AKSSubnet",
+                "NVATrust",
+                "NVAUntrust",
+                "NVAMgmt",
+                "RouteServerSubnet"
+              ]
+            },
+            "nvaIpAddress": {
+              "type": "string",
+              "defaultValue": "10.0.0.4"
+            },
+            "deployudr": {
+              "type": "bool",
+              "defaultValue": true
+            },
+            "UDRForceTunneling": {
+              "type": "bool",
+              "defaultValue": false
+            },
+            "customsourceaddresscidr": {
+              "type": "string",
+              "defaultValue": "8.8.8.8/32"
+            },
+            "deploy_NatGateway": {
+              "type": "bool",
+              "defaultValue": false
+            },
+            "publicipname": {
+              "type": "string",
+              "defaultValue": "Nat_Gateway_VIP"
+            },
+            "natgatewayname": {
+              "type": "string",
+              "defaultValue": "Nat_Gateway"
+            },
+            "UsecustomLocation": {
+              "type": "bool",
+              "defaultValue": false
+            },
+            "customlocation": {
+              "type": "string",
+              "defaultValue": "eastus"
+            },
+            "add443Inbound": {
+              "type": "bool",
+              "defaultValue": false
+            }
+          },
+          "variables": {
+            "copy": [
+              {
+                "name": "subnetAddressPrefixes",
+                "count": "[length(parameters('subnet_Names'))]",
+                "input": {
+                  "name": "[parameters('subnet_Names')[copyIndex('subnetAddressPrefixes')]]",
+                  "addressPrefix": "[format('{0}.{1}.{2}.0/24', variables('baseOctets')[0], variables('baseOctets')[1], add(variables('baseOctets')[2], copyIndex('subnetAddressPrefixes')))]"
+                }
+              }
+            ],
+            "networkSecurityGroup_Default_Name": "[format('{0}_NSG_General', parameters('virtualNetwork_Name'))]",
+            "routeTable_Name": "[format('{0}_RT_General', parameters('virtualNetwork_Name'))]",
+            "location": "[if(parameters('UsecustomLocation'), parameters('customlocation'), resourceGroup().location)]",
+            "baseAddress": "[split(parameters('virtualNetwork_AddressPrefix'), '/')[0]]",
+            "baseOctets": [
+              "[int(split(variables('baseAddress'), '.')[0])]",
+              "[int(split(variables('baseAddress'), '.')[1])]",
+              "[int(split(variables('baseAddress'), '.')[2])]",
+              "[int(split(variables('baseAddress'), '.')[3])]"
+            ],
+            "routes": "[if(parameters('UDRForceTunneling'), createArray(createObject('id', resourceId('Microsoft.Network/routeTables/routes', variables('routeTable_Name'), 'VirtualNetworkRoute'), 'name', 'VirtualNetworkRoute', 'properties', createObject('addressPrefix', parameters('virtualNetwork_AddressPrefix'), 'nextHopType', 'VirtualAppliance', 'nextHopIpAddress', parameters('nvaIpAddress'))), createObject('id', resourceId('Microsoft.Network/routeTables/routes', variables('routeTable_Name'), 'defaultRoute'), 'name', 'defaultRoute', 'properties', createObject('addressPrefix', '0.0.0.0/0', 'nextHopType', 'VirtualAppliance', 'nextHopIpAddress', parameters('nvaIpAddress')))), createArray(createObject('id', resourceId('Microsoft.Network/routeTables/routes', variables('routeTable_Name'), 'VirtualNetworkRoute'), 'name', 'VirtualNetworkRoute', 'properties', createObject('addressPrefix', parameters('virtualNetwork_AddressPrefix'), 'nextHopType', 'VirtualAppliance', 'nextHopIpAddress', parameters('nvaIpAddress')))))]",
+            "NSGAllow443": "[if(parameters('add443Inbound'), createArray(createObject('id', resourceId('Microsoft.Network/networkSecurityGroups/securityRules', variables('networkSecurityGroup_Default_Name'), 'AllowCustomInbound'), 'name', 'AllowCustomInbound', 'properties', createObject('description', 'Allow Custom Inbound', 'protocol', '*', 'sourcePortRange', '*', 'sourceAddressPrefix', parameters('customsourceaddresscidr'), 'destinationAddressPrefix', 'VirtualNetwork', 'access', 'Allow', 'priority', 100, 'direction', 'Inbound', 'destinationPortRanges', createArray('22', '3389'))), createObject('id', resourceId('Microsoft.Network/networkSecurityGroups/securityRules', variables('networkSecurityGroup_Default_Name'), 'AllowCustomInbound'), 'name', 'AllowCustomhttphttpsInbound', 'properties', createObject('description', 'Allow Custom HTTP and HTTPS Inbound', 'protocol', '*', 'sourcePortRange', '*', 'sourceAddressPrefix', parameters('customsourceaddresscidr'), 'destinationAddressPrefix', 'VirtualNetwork', 'access', 'Allow', 'priority', 101, 'direction', 'Inbound', 'destinationPortRanges', createArray('80', '443'))), createObject('id', resourceId('Microsoft.Network/networkSecurityGroups/securityRules', variables('networkSecurityGroup_Default_Name'), 'Allow443inbound'), 'name', 'Allow443inbound', 'properties', createObject('description', 'Allow 443 inbound', 'protocol', 'Tcp', 'sourcePortRange', '*', 'sourceAddressPrefix', 'Internet', 'destinationAddressPrefix', 'VirtualNetwork', 'access', 'Allow', 'priority', 102, 'direction', 'Inbound', 'destinationPortRanges', createArray('443'))), createObject('name', 'AllowGatewayManager', 'properties', createObject('description', 'Allow GatewayManager', 'protocol', '*', 'sourcePortRange', '*', 'destinationPortRange', '65200-65535', 'sourceAddressPrefix', 'GatewayManager', 'destinationAddressPrefix', '*', 'access', 'Allow', 'priority', 1003, 'direction', 'Inbound', 'sourcePortRanges', createArray(), 'destinationPortRanges', createArray(), 'sourceAddressPrefixes', createArray(), 'destinationAddressPrefixes', createArray())), createObject('id', resourceId('Microsoft.Network/networkSecurityGroups/securityRules', variables('networkSecurityGroup_Default_Name'), 'AllowHttpInboundlocal'), 'name', 'AllowHttpInboundlocal', 'properties', createObject('description', 'Allow Http Inbound', 'protocol', '*', 'sourcePortRange', '*', 'sourceAddressPrefix', 'VirtualNetwork', 'destinationAddressPrefix', 'VirtualNetwork', 'access', 'Allow', 'priority', 1004, 'direction', 'Inbound', 'destinationPortRanges', createArray('80'))), createObject('id', resourceId('Microsoft.Network/networkSecurityGroups/securityRules', variables('networkSecurityGroup_Default_Name'), 'AllowCorpnetInbound'), 'name', 'AllowCorpnetInbound', 'properties', createObject('description', 'Allow Corpnet Inbound', 'protocol', '*', 'sourcePortRange', '*', 'sourceAddressPrefix', 'CorpNetPublic', 'destinationAddressPrefix', 'VirtualNetwork', 'access', 'Allow', 'priority', 2000, 'direction', 'Inbound', 'destinationPortRanges', createArray('22', '3389', '80', '443'))), createObject('id', resourceId('Microsoft.Network/networkSecurityGroups/securityRules', variables('networkSecurityGroup_Default_Name'), 'AllowSAWInbound'), 'name', 'AllowSAWInbound', 'properties', createObject('description', 'Allow SAW Inbound', 'protocol', '*', 'sourcePortRange', '*', 'sourceAddressPrefix', 'CorpNetSaw', 'destinationAddressPrefix', 'VirtualNetwork', 'access', 'Allow', 'priority', 2010, 'direction', 'Inbound', 'destinationPortRanges', createArray('22', '3389', '80', '443')))), createArray(createObject('id', resourceId('Microsoft.Network/networkSecurityGroups/securityRules', variables('networkSecurityGroup_Default_Name'), 'AllowCustomInbound'), 'name', 'AllowCustomInbound', 'properties', createObject('description', 'Allow Custom Inbound', 'protocol', '*', 'sourcePortRange', '*', 'sourceAddressPrefix', parameters('customsourceaddresscidr'), 'destinationAddressPrefix', 'VirtualNetwork', 'access', 'Allow', 'priority', 100, 'direction', 'Inbound', 'destinationPortRanges', createArray('22', '3389'))), createObject('id', resourceId('Microsoft.Network/networkSecurityGroups/securityRules', variables('networkSecurityGroup_Default_Name'), 'AllowCustomInbound'), 'name', 'AllowCustomhttphttpsInbound', 'properties', createObject('description', 'Allow Custom HTTP and HTTPS Inbound', 'protocol', '*', 'sourcePortRange', '*', 'sourceAddressPrefix', parameters('customsourceaddresscidr'), 'destinationAddressPrefix', 'VirtualNetwork', 'access', 'Allow', 'priority', 101, 'direction', 'Inbound', 'destinationPortRanges', createArray('80', '443'))), createObject('name', 'AllowGatewayManager', 'properties', createObject('description', 'Allow GatewayManager', 'protocol', '*', 'sourcePortRange', '*', 'destinationPortRange', '65200-65535', 'sourceAddressPrefix', 'GatewayManager', 'destinationAddressPrefix', '*', 'access', 'Allow', 'priority', 1003, 'direction', 'Inbound', 'sourcePortRanges', createArray(), 'destinationPortRanges', createArray(), 'sourceAddressPrefixes', createArray(), 'destinationAddressPrefixes', createArray())), createObject('id', resourceId('Microsoft.Network/networkSecurityGroups/securityRules', variables('networkSecurityGroup_Default_Name'), 'AllowHttpInboundlocal'), 'name', 'AllowHttpInboundlocal', 'properties', createObject('description', 'Allow Http Inbound', 'protocol', '*', 'sourcePortRange', '*', 'sourceAddressPrefix', 'VirtualNetwork', 'destinationAddressPrefix', 'VirtualNetwork', 'access', 'Allow', 'priority', 1004, 'direction', 'Inbound', 'destinationPortRanges', createArray('80'))), createObject('id', resourceId('Microsoft.Network/networkSecurityGroups/securityRules', variables('networkSecurityGroup_Default_Name'), 'AllowCorpnetInbound'), 'name', 'AllowCorpnetInbound', 'properties', createObject('description', 'Allow Corpnet Inbound', 'protocol', '*', 'sourcePortRange', '*', 'sourceAddressPrefix', 'CorpNetPublic', 'destinationAddressPrefix', 'VirtualNetwork', 'access', 'Allow', 'priority', 2000, 'direction', 'Inbound', 'destinationPortRanges', createArray('22', '3389', '80', '443'))), createObject('id', resourceId('Microsoft.Network/networkSecurityGroups/securityRules', variables('networkSecurityGroup_Default_Name'), 'AllowSAWInbound'), 'name', 'AllowSAWInbound', 'properties', createObject('description', 'Allow SAW Inbound', 'protocol', '*', 'sourcePortRange', '*', 'sourceAddressPrefix', 'CorpNetSaw', 'destinationAddressPrefix', 'VirtualNetwork', 'access', 'Allow', 'priority', 2010, 'direction', 'Inbound', 'destinationPortRanges', createArray('22', '3389', '80', '443')))))]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Network/virtualNetworks",
+              "apiVersion": "2024-05-01",
+              "name": "[parameters('virtualNetwork_Name')]",
+              "location": "[variables('location')]",
+              "properties": {
+                "copy": [
+                  {
+                    "name": "subnets",
+                    "count": "[length(parameters('subnet_Names'))]",
+                    "input": {
+                      "name": "[variables('subnetAddressPrefixes')[copyIndex('subnets')].name]",
+                      "properties": {
+                        "addressPrefix": "[variables('subnetAddressPrefixes')[copyIndex('subnets')].addressPrefix]",
+                        "networkSecurityGroup": "[if(and(and(and(and(and(and(and(and(not(equals(parameters('subnet_Names')[copyIndex('subnets')], 'AGCSubnet')), not(equals(parameters('subnet_Names')[copyIndex('subnets')], 'AzureFirewallSubnet'))), not(equals(parameters('subnet_Names')[copyIndex('subnets')], 'AzureFirewallManagementSubnet'))), not(equals(parameters('subnet_Names')[copyIndex('subnets')], 'GatewaySubnet'))), not(equals(parameters('subnet_Names')[copyIndex('subnets')], 'AGSubnet'))), not(equals(parameters('subnet_Names')[copyIndex('subnets')], 'AzureBastionSubnet'))), not(equals(parameters('subnet_Names')[copyIndex('subnets')], 'AKSSubnet'))), not(equals(parameters('subnet_Names')[copyIndex('subnets')], 'RouteServerSubnet'))), not(equals(parameters('subnet_Names')[copyIndex('subnets')], 'AGSubnet_noNSG'))), createObject('id', resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroup_Default_Name'))), if(equals(parameters('subnet_Names')[copyIndex('subnets')], 'AGSubnet'), createObject('id', resourceId('Microsoft.Network/networkSecurityGroups', format('{0}_NSG_ApplicationGateway', parameters('virtualNetwork_Name')))), null()))]",
+                        "routeTable": "[if(and(parameters('deployudr'), and(and(and(and(and(and(and(and(and(not(equals(parameters('subnet_Names')[copyIndex('subnets')], 'AzureFirewallSubnet')), not(equals(parameters('subnet_Names')[copyIndex('subnets')], 'AzureFirewallManagementSubnet'))), not(equals(parameters('subnet_Names')[copyIndex('subnets')], 'GatewaySubnet'))), not(equals(parameters('subnet_Names')[copyIndex('subnets')], 'AGCSubnet'))), not(equals(parameters('subnet_Names')[copyIndex('subnets')], 'AGSubnet'))), not(equals(parameters('subnet_Names')[copyIndex('subnets')], 'AzureBastionSubnet'))), not(equals(parameters('subnet_Names')[copyIndex('subnets')], 'NVATrust'))), not(equals(parameters('subnet_Names')[copyIndex('subnets')], 'NVAUntrust'))), not(equals(parameters('subnet_Names')[copyIndex('subnets')], 'NVAMgmt'))), not(equals(parameters('subnet_Names')[copyIndex('subnets')], 'RouteServerSubnet')))), createObject('id', resourceId('Microsoft.Network/routeTables', variables('routeTable_Name'))), null())]",
+                        "delegations": "[if(equals(parameters('subnet_Names')[copyIndex('subnets')], 'AGCSubnet'), createArray(createObject('name', 'Microsoft.ServiceNetworking/trafficControllers', 'properties', createObject('serviceName', 'Microsoft.ServiceNetworking/trafficControllers'))), if(equals(parameters('subnet_Names')[copyIndex('subnets')], 'AGSubnet'), createArray(createObject('name', 'Microsoft.Network/applicationGateways', 'properties', createObject('serviceName', 'Microsoft.Network/applicationGateways'))), if(equals(parameters('subnet_Names')[copyIndex('subnets')], 'PrivAGSubnet'), createArray(createObject('name', 'Microsoft.Network/applicationGateways', 'properties', createObject('serviceName', 'Microsoft.Network/applicationGateways'))), null())))]",
+                        "natGateway": "[if(and(and(parameters('deploy_NatGateway'), not(equals(parameters('deployudr'), true()))), and(and(and(and(and(and(not(equals(parameters('subnet_Names')[copyIndex('subnets')], 'AzureFirewallSubnet')), not(equals(parameters('subnet_Names')[copyIndex('subnets')], 'AzureFirewallManagementSubnet'))), not(equals(parameters('subnet_Names')[copyIndex('subnets')], 'GatewaySubnet'))), not(equals(parameters('subnet_Names')[copyIndex('subnets')], 'AGCSubnet'))), not(equals(parameters('subnet_Names')[copyIndex('subnets')], 'AGSubnet'))), not(equals(parameters('subnet_Names')[copyIndex('subnets')], 'AzureBastionSubnet'))), not(equals(parameters('subnet_Names')[copyIndex('subnets')], 'RouteServerSubnet')))), createObject('id', resourceId('Microsoft.Network/natGateways', parameters('natgatewayname'))), null())]"
+                      }
+                    }
+                  }
+                ],
+                "dhcpOptions": {
+                  "dnsServers": "[parameters('dnsServers')]"
+                },
+                "addressSpace": {
+                  "addressPrefixes": [
+                    "[parameters('virtualNetwork_AddressPrefix')]"
+                  ]
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/natGateways', parameters('natgatewayname'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroup_Default_Name'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', format('{0}_NSG_ApplicationGateway', parameters('virtualNetwork_Name')))]",
+                "[resourceId('Microsoft.Network/routeTables', variables('routeTable_Name'))]"
+              ]
+            },
+            {
+              "condition": "[parameters('deployudr')]",
+              "type": "Microsoft.Network/routeTables",
+              "apiVersion": "2023-02-01",
+              "name": "[variables('routeTable_Name')]",
+              "location": "[variables('location')]",
+              "properties": {
+                "disableBgpRoutePropagation": false,
+                "routes": "[variables('routes')]"
+              },
+              "tags": "[parameters('tagValues')]"
+            },
+            {
+              "type": "Microsoft.Network/networkSecurityGroups",
+              "apiVersion": "2022-09-01",
+              "name": "[variables('networkSecurityGroup_Default_Name')]",
+              "location": "[variables('location')]",
+              "properties": {
+                "securityRules": "[variables('NSGAllow443')]"
+              },
+              "tags": "[parameters('tagValues')]"
+            },
+            {
+              "condition": "[contains(parameters('subnet_Names'), 'AGSubnet')]",
+              "type": "Microsoft.Network/networkSecurityGroups",
+              "apiVersion": "2022-11-01",
+              "name": "[format('{0}_NSG_ApplicationGateway', parameters('virtualNetwork_Name'))]",
+              "location": "[variables('location')]",
+              "properties": {
+                "securityRules": [
+                  {
+                    "name": "AllowGatewayManager",
+                    "properties": {
+                      "description": "Allow GatewayManager",
+                      "protocol": "*",
+                      "sourcePortRange": "*",
+                      "destinationPortRange": "65200-65535",
+                      "sourceAddressPrefix": "GatewayManager",
+                      "destinationAddressPrefix": "*",
+                      "access": "Allow",
+                      "priority": 1000,
+                      "direction": "Inbound",
+                      "sourcePortRanges": [],
+                      "destinationPortRanges": [],
+                      "sourceAddressPrefixes": [],
+                      "destinationAddressPrefixes": []
+                    }
+                  },
+                  {
+                    "name": "AllowHTTPS",
+                    "properties": {
+                      "description": "Allow HTTPS",
+                      "protocol": "Tcp",
+                      "sourcePortRange": "*",
+                      "destinationPortRange": "443",
+                      "sourceAddressPrefix": "*",
+                      "destinationAddressPrefix": "*",
+                      "access": "Allow",
+                      "priority": 1001,
+                      "direction": "Inbound",
+                      "sourcePortRanges": [],
+                      "destinationPortRanges": [],
+                      "sourceAddressPrefixes": [],
+                      "destinationAddressPrefixes": []
+                    }
+                  },
+                  {
+                    "name": "AllowHTTPlocal",
+                    "properties": {
+                      "description": "Allow HTTP from local",
+                      "protocol": "Tcp",
+                      "sourcePortRange": "*",
+                      "destinationPortRange": "80",
+                      "sourceAddressPrefix": "VirtualNetwork",
+                      "destinationAddressPrefix": "*",
+                      "access": "Allow",
+                      "priority": 1002,
+                      "direction": "Inbound",
+                      "sourcePortRanges": [],
+                      "destinationPortRanges": [],
+                      "sourceAddressPrefixes": [],
+                      "destinationAddressPrefixes": []
+                    }
+                  },
+                  {
+                    "name": "AllowHTTPfromCustom",
+                    "properties": {
+                      "description": "Allow HTTP from custom",
+                      "protocol": "Tcp",
+                      "sourcePortRange": "*",
+                      "destinationPortRange": "443",
+                      "sourceAddressPrefix": "[parameters('customsourceaddresscidr')]",
+                      "destinationAddressPrefix": "*",
+                      "access": "Allow",
+                      "priority": 1003,
+                      "direction": "Inbound",
+                      "sourcePortRanges": [],
+                      "destinationPortRanges": [],
+                      "sourceAddressPrefixes": [],
+                      "destinationAddressPrefixes": []
+                    }
+                  },
+                  {
+                    "name": "AllowCorpnetInbound",
+                    "properties": {
+                      "description": "Allow Corpnet Inbound",
+                      "protocol": "*",
+                      "sourcePortRange": "*",
+                      "sourceAddressPrefix": "CorpNetPublic",
+                      "destinationAddressPrefix": "VirtualNetwork",
+                      "access": "Allow",
+                      "priority": 2000,
+                      "direction": "Inbound",
+                      "destinationPortRanges": [
+                        "80",
+                        "443"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "AllowSAWInbound",
+                    "properties": {
+                      "description": "Allow SAW Inbound",
+                      "protocol": "*",
+                      "sourcePortRange": "*",
+                      "sourceAddressPrefix": "CorpNetSaw",
+                      "destinationAddressPrefix": "VirtualNetwork",
+                      "access": "Allow",
+                      "priority": 2010,
+                      "direction": "Inbound",
+                      "destinationPortRanges": [
+                        "80",
+                        "443"
+                      ]
+                    }
+                  }
+                ]
+              },
+              "tags": "[parameters('tagValues')]"
+            },
+            {
+              "condition": "[parameters('deploy_NatGateway')]",
+              "type": "Microsoft.Network/publicIPAddresses",
+              "apiVersion": "2021-05-01",
+              "name": "[parameters('publicipname')]",
+              "location": "[resourceGroup().location]",
+              "sku": {
+                "name": "Standard"
+              },
+              "properties": {
+                "publicIPAddressVersion": "IPv4",
+                "publicIPAllocationMethod": "Static",
+                "idleTimeoutInMinutes": 4
+              }
+            },
+            {
+              "condition": "[parameters('deploy_NatGateway')]",
+              "type": "Microsoft.Network/natGateways",
+              "apiVersion": "2021-05-01",
+              "name": "[parameters('natgatewayname')]",
+              "location": "[resourceGroup().location]",
+              "sku": {
+                "name": "Standard"
+              },
+              "properties": {
+                "idleTimeoutInMinutes": 4,
+                "publicIpAddresses": [
+                  {
+                    "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicipname'))]"
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicipname'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "virtualNetwork_Name": {
+              "type": "string",
+              "value": "[parameters('virtualNetwork_Name')]"
+            },
+            "virtualNetwork_ID": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetwork_Name'))]"
+            },
+            "virtualNetwork_AddressPrefix": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetwork_Name')), '2024-05-01').addressSpace.addressPrefixes[0]]"
+            },
+            "subnets": {
+              "type": "array",
+              "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetwork_Name')), '2024-05-01').subnets]"
+            },
+            "routeTable_Name": {
+              "type": "string",
+              "value": "[variables('routeTable_Name')]"
+            },
+            "routeTable_ID": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Network/routeTables', variables('routeTable_Name'))]"
+            },
+            "networkSecurityGroup_Name": {
+              "type": "string",
+              "value": "[variables('networkSecurityGroup_Default_Name')]"
+            },
+            "networkSecurityGroup_ID": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroup_Default_Name'))]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "[parameters('backendVMName')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "virtualMachine_Name": {
+            "value": "[parameters('backendVMName')]"
+          },
+          "virtualMachine_Size": {
+            "value": "[parameters('VMSize')]"
+          },
+          "virtualMachine_AdminUsername": {
+            "value": "[parameters('VMAdminUsername')]"
+          },
+          "virtualMachine_AdminPassword": {
+            "value": "[parameters('VMAdminPassword')]"
+          },
+          "acceleratedNetworking": {
+            "value": false
+          },
+          "subnet_ID": {
+            "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('backendSubnetName'))]"
+          },
+          "addPublicIPAddress": {
+            "value": false
+          },
+          "virtualMachine_ScriptFileLocation": {
+            "value": "https://raw.githubusercontent.com/Azure-Samples/compute-automation-configurations/master/"
+          },
+          "virtualMachine_ScriptFileName": {
+            "value": "automate-iis.ps1"
+          },
+          "commandToExecute": {
+            "value": "powershell -ExecutionPolicy Unrestricted -File automate-iis.ps1"
+          },
+          "tagValues": {
+            "value": {}
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.41.2.15936",
+              "templateHash": "8368892544794916642"
+            }
+          },
+          "parameters": {
+            "virtualMachine_Name": {
+              "type": "string",
+              "maxLength": 15,
+              "metadata": {
+                "description": "Name of the Virtual Machine"
+              }
+            },
+            "virtualMachine_Size": {
+              "type": "string",
+              "metadata": {
+                "description": "Size of the Virtual Machine\nExamples:\nB2ms - 2 Core 8GB Ram - Cannot use Accelerated Networking\nD2as_v5 2 Core 8GB Ram - Uses Accelerated Networking"
+              }
+            },
+            "virtualMachine_AdminUsername": {
+              "type": "string",
+              "metadata": {
+                "description": "Admin Username for the Virtual Machine"
+              }
+            },
+            "virtualMachine_AdminPassword": {
+              "type": "securestring",
+              "metadata": {
+                "description": "Password for the Virtual Machine Admin User"
+              }
+            },
+            "networkInterface_Name": {
+              "type": "string",
+              "defaultValue": "[format('{0}_NetworkInterface', parameters('virtualMachine_Name'))]",
+              "metadata": {
+                "description": "Name of the Virtual Machines Network Interface"
+              }
+            },
+            "acceleratedNetworking": {
+              "type": "bool",
+              "metadata": {
+                "description": "True enables Accelerated Networking and False disabled it.  Not all sizes support Accel Net"
+              }
+            },
+            "subnet_ID": {
+              "type": "string",
+              "metadata": {
+                "description": "The Resource ID of the subnet to which the Network Interface will be assigned."
+              }
+            },
+            "virtualMachine_ScriptFileLocation": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Location of the file to be ran while the Virtual Machine is being created.  Ensure that the path ends with a /\nExample: https://example.com/scripts/"
+              }
+            },
+            "virtualMachine_ScriptFileName": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Name of the file to be ran while the Virtual Machine is being created\nExample: WinServ2022_ConfigScript_General.ps1"
+              }
+            },
+            "commandToExecute": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "'Command to execute while the Virtual Machine is being created.\nExample:\n'powershell.exe -ExecutionPolicy Unrestricted -File <file name.ps1>'\n"
+              }
+            },
+            "addPublicIPAddress": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Adds a Public IP to the Network Interface of the Virtual Machine"
+              }
+            },
+            "privateIPAllocationMethod": {
+              "type": "string",
+              "defaultValue": "Dynamic",
+              "allowedValues": [
+                "Dynamic",
+                "Static"
+              ],
+              "metadata": {
+                "description": "Sets the allocation mode of the IP Address of the Network Interface to either Dynamic or Static."
+              }
+            },
+            "privateIPAddress": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Enter the Static IP Address here if privateIPAllocationMethod is set to Static."
+              }
+            },
+            "addtoloadbalancer": {
+              "type": "bool",
+              "defaultValue": false
+            },
+            "loadbalancername": {
+              "type": "string",
+              "defaultValue": ""
+            },
+            "tagValues": {
+              "type": "object",
+              "defaultValue": {}
+            },
+            "UsecustomLocation": {
+              "type": "bool",
+              "defaultValue": false
+            },
+            "customlocation": {
+              "type": "string",
+              "defaultValue": "eastus"
+            }
+          },
+          "variables": {
+            "virtualMachine_ScriptFileUri": "[format('{0}{1}', parameters('virtualMachine_ScriptFileLocation'), parameters('virtualMachine_ScriptFileName'))]",
+            "location": "[if(parameters('UsecustomLocation'), parameters('customlocation'), resourceGroup().location)]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Compute/virtualMachines",
+              "apiVersion": "2022-11-01",
+              "name": "[parameters('virtualMachine_Name')]",
+              "location": "[variables('location')]",
+              "identity": {
+                "type": "SystemAssigned"
+              },
+              "properties": {
+                "hardwareProfile": {
+                  "vmSize": "[parameters('virtualMachine_Size')]"
+                },
+                "storageProfile": {
+                  "imageReference": {
+                    "publisher": "MicrosoftWindowsServer",
+                    "offer": "WindowsServer",
+                    "sku": "2022-datacenter-azure-edition",
+                    "version": "latest"
+                  },
+                  "osDisk": {
+                    "osType": "Windows",
+                    "name": "[format('{0}_OsDisk_1', parameters('virtualMachine_Name'))]",
+                    "createOption": "FromImage",
+                    "caching": "ReadWrite",
+                    "managedDisk": {
+                      "storageAccountType": "Standard_LRS"
+                    },
+                    "deleteOption": "Delete",
+                    "diskSizeGB": 127
+                  },
+                  "dataDisks": [],
+                  "diskControllerType": "SCSI"
+                },
+                "osProfile": {
+                  "computerName": "[parameters('virtualMachine_Name')]",
+                  "adminUsername": "[parameters('virtualMachine_AdminUsername')]",
+                  "adminPassword": "[parameters('virtualMachine_AdminPassword')]",
+                  "windowsConfiguration": {
+                    "provisionVMAgent": true,
+                    "enableAutomaticUpdates": true,
+                    "patchSettings": {
+                      "patchMode": "AutomaticByOS",
+                      "assessmentMode": "ImageDefault",
+                      "enableHotpatching": false
+                    },
+                    "enableVMAgentPlatformUpdates": false
+                  },
+                  "secrets": [],
+                  "allowExtensionOperations": true
+                },
+                "networkProfile": {
+                  "networkInterfaces": [
+                    {
+                      "id": "[reference(resourceId('Microsoft.Resources/deployments', parameters('networkInterface_Name')), '2025-04-01').outputs.networkInterface_ID.value]",
+                      "properties": {
+                        "deleteOption": "Delete"
+                      }
+                    }
+                  ]
+                },
+                "diagnosticsProfile": {
+                  "bootDiagnostics": {
+                    "enabled": true
+                  }
+                },
+                "evictionPolicy": "Deallocate",
+                "priority": "Spot"
+              },
+              "tags": "[parameters('tagValues')]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Resources/deployments', parameters('networkInterface_Name'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Compute/virtualMachines/extensions",
+              "apiVersion": "2022-11-01",
+              "name": "[format('{0}/{1}', parameters('virtualMachine_Name'), 'AzureNetworkWatcherExtension')]",
+              "location": "[variables('location')]",
+              "properties": {
+                "autoUpgradeMinorVersion": true,
+                "publisher": "Microsoft.Azure.NetworkWatcher",
+                "type": "NetworkWatcherAgentWindows",
+                "typeHandlerVersion": "1.4"
+              },
+              "tags": "[parameters('tagValues')]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachine_Name'))]"
+              ]
+            },
+            {
+              "condition": "[not(equals(parameters('virtualMachine_ScriptFileName'), ''))]",
+              "type": "Microsoft.Compute/virtualMachines/extensions",
+              "apiVersion": "2021-11-01",
+              "name": "[format('{0}/{1}', parameters('virtualMachine_Name'), 'installcustomscript')]",
+              "location": "[variables('location')]",
+              "properties": {
+                "publisher": "Microsoft.Compute",
+                "type": "CustomScriptExtension",
+                "typeHandlerVersion": "1.9",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                  "fileUris": [
+                    "[variables('virtualMachine_ScriptFileUri')]"
+                  ]
+                },
+                "protectedSettings": {
+                  "commandToExecute": "[parameters('commandToExecute')]"
+                }
+              },
+              "tags": "[parameters('tagValues')]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachine_Name'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Resources/deployments",
+              "apiVersion": "2025-04-01",
+              "name": "[parameters('networkInterface_Name')]",
+              "properties": {
+                "expressionEvaluationOptions": {
+                  "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                  "location": {
+                    "value": "[variables('location')]"
+                  },
+                  "acceleratedNetworking": {
+                    "value": "[parameters('acceleratedNetworking')]"
+                  },
+                  "networkInterface_Name": {
+                    "value": "[parameters('networkInterface_Name')]"
+                  },
+                  "subnet_ID": {
+                    "value": "[parameters('subnet_ID')]"
+                  },
+                  "addPublicIPAddress": {
+                    "value": "[parameters('addPublicIPAddress')]"
+                  },
+                  "privateIPAllocationMethod": {
+                    "value": "[parameters('privateIPAllocationMethod')]"
+                  },
+                  "privateIPAddress": {
+                    "value": "[parameters('privateIPAddress')]"
+                  },
+                  "addtoloadbalancer": {
+                    "value": "[parameters('addtoloadbalancer')]"
+                  },
+                  "loadbalancername": {
+                    "value": "[parameters('loadbalancername')]"
+                  },
+                  "tagValues": {
+                    "value": "[parameters('tagValues')]"
+                  }
+                },
+                "template": {
+                  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                  "contentVersion": "1.0.0.0",
+                  "metadata": {
+                    "_generator": {
+                      "name": "bicep",
+                      "version": "0.41.2.15936",
+                      "templateHash": "1971393346978754995"
+                    }
+                  },
+                  "parameters": {
+                    "networkInterface_Name": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Name of the Virtual Machines Network Interface"
+                      }
+                    },
+                    "location": {
+                      "type": "string",
+                      "defaultValue": "[resourceGroup().location]"
+                    },
+                    "acceleratedNetworking": {
+                      "type": "bool",
+                      "metadata": {
+                        "description": "True enables Accelerated Networking and False disabled it.  Not all virtualMachine sizes support Accel Net"
+                      }
+                    },
+                    "privateIPAllocationMethod": {
+                      "type": "string",
+                      "defaultValue": "Dynamic",
+                      "allowedValues": [
+                        "Dynamic",
+                        "Static"
+                      ],
+                      "metadata": {
+                        "description": "Sets the allocation mode of the IP Address of the Network Interface to either Dynamic or Static."
+                      }
+                    },
+                    "privateIPAddress": {
+                      "type": "string",
+                      "defaultValue": "",
+                      "metadata": {
+                        "description": "Enter the Static IP Address here if privateIPAllocationMethod is set to Static."
+                      }
+                    },
+                    "subnet_ID": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "The Resource ID of the subnet to which the Network Interface will be assigned."
+                      }
+                    },
+                    "addPublicIPAddress": {
+                      "type": "bool",
+                      "defaultValue": false,
+                      "metadata": {
+                        "description": "Adds a Public IP to the Network Interface of the Virtual Machine if true."
+                      }
+                    },
+                    "addtoloadbalancer": {
+                      "type": "bool",
+                      "defaultValue": false
+                    },
+                    "loadbalancername": {
+                      "type": "string",
+                      "defaultValue": ""
+                    },
+                    "IPForward": {
+                      "type": "bool",
+                      "defaultValue": false
+                    },
+                    "tagValues": {
+                      "type": "object",
+                      "defaultValue": {}
+                    }
+                  },
+                  "resources": [
+                    {
+                      "condition": "[not(parameters('addPublicIPAddress'))]",
+                      "type": "Microsoft.Network/networkInterfaces",
+                      "apiVersion": "2022-09-01",
+                      "name": "[parameters('networkInterface_Name')]",
+                      "location": "[parameters('location')]",
+                      "properties": {
+                        "ipConfigurations": [
+                          {
+                            "name": "ipconfig0",
+                            "properties": {
+                              "privateIPAllocationMethod": "[parameters('privateIPAllocationMethod')]",
+                              "subnet": {
+                                "id": "[parameters('subnet_ID')]"
+                              },
+                              "primary": true,
+                              "privateIPAddressVersion": "IPv4",
+                              "privateIPAddress": "[parameters('privateIPAddress')]",
+                              "loadBalancerBackendAddressPools": "[if(parameters('addtoloadbalancer'), createArray(createObject('id', resourceId('Microsoft.Network/loadBalancers/backendAddressPools', parameters('loadbalancername'), 'bep'))), createArray())]"
+                            }
+                          }
+                        ],
+                        "enableAcceleratedNetworking": "[parameters('acceleratedNetworking')]",
+                        "enableIPForwarding": "[parameters('IPForward')]",
+                        "disableTcpStateTracking": false,
+                        "nicType": "Standard"
+                      },
+                      "tags": "[parameters('tagValues')]"
+                    },
+                    {
+                      "condition": "[parameters('addPublicIPAddress')]",
+                      "type": "Microsoft.Network/networkInterfaces",
+                      "apiVersion": "2022-09-01",
+                      "name": "[parameters('networkInterface_Name')]",
+                      "location": "[parameters('location')]",
+                      "properties": {
+                        "ipConfigurations": [
+                          {
+                            "name": "ipconfig0",
+                            "properties": {
+                              "privateIPAllocationMethod": "[parameters('privateIPAllocationMethod')]",
+                              "subnet": {
+                                "id": "[parameters('subnet_ID')]"
+                              },
+                              "primary": true,
+                              "privateIPAddressVersion": "IPv4",
+                              "privateIPAddress": "[parameters('privateIPAddress')]",
+                              "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', format('{0}_PIP', parameters('networkInterface_Name')))]"
+                              },
+                              "loadBalancerBackendAddressPools": "[if(parameters('addtoloadbalancer'), createArray(createObject('id', resourceId('Microsoft.Network/loadBalancers/backendAddressPools', parameters('loadbalancername'), 'bep'))), createArray())]"
+                            }
+                          }
+                        ],
+                        "enableAcceleratedNetworking": "[parameters('acceleratedNetworking')]",
+                        "enableIPForwarding": false,
+                        "disableTcpStateTracking": false,
+                        "nicType": "Standard"
+                      },
+                      "tags": "[parameters('tagValues')]",
+                      "dependsOn": [
+                        "[resourceId('Microsoft.Network/publicIPAddresses', format('{0}_PIP', parameters('networkInterface_Name')))]"
+                      ]
+                    },
+                    {
+                      "condition": "[parameters('addPublicIPAddress')]",
+                      "type": "Microsoft.Network/publicIPAddresses",
+                      "apiVersion": "2023-06-01",
+                      "name": "[format('{0}_PIP', parameters('networkInterface_Name'))]",
+                      "location": "[parameters('location')]",
+                      "sku": {
+                        "name": "Standard",
+                        "tier": "Regional"
+                      },
+                      "properties": {
+                        "publicIPAddressVersion": "IPv4",
+                        "publicIPAllocationMethod": "Static",
+                        "idleTimeoutInMinutes": 4,
+                        "ipTags": []
+                      },
+                      "tags": "[parameters('tagValues')]"
+                    }
+                  ],
+                  "outputs": {
+                    "networkInterface_Name": {
+                      "type": "string",
+                      "value": "[if(parameters('addPublicIPAddress'), parameters('networkInterface_Name'), parameters('networkInterface_Name'))]"
+                    },
+                    "networkInterface_ID": {
+                      "type": "string",
+                      "value": "[if(parameters('addPublicIPAddress'), resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterface_Name')), resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterface_Name')))]"
+                    },
+                    "networkInterface_IPConfig0_Name": {
+                      "type": "string",
+                      "value": "[if(parameters('addPublicIPAddress'), reference(resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterface_Name')), '2022-09-01').ipConfigurations[0].name, reference(resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterface_Name')), '2022-09-01').ipConfigurations[0].name)]"
+                    },
+                    "networkInterface_IPConfig0_ID": {
+                      "type": "string",
+                      "value": "[if(parameters('addPublicIPAddress'), reference(resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterface_Name')), '2022-09-01').ipConfigurations[0].id, reference(resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterface_Name')), '2022-09-01').ipConfigurations[0].id)]"
+                    },
+                    "networkInterface_PrivateIPAddress": {
+                      "type": "string",
+                      "value": "[if(parameters('addPublicIPAddress'), reference(resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterface_Name')), '2022-09-01').ipConfigurations[0].properties.privateIPAddress, reference(resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterface_Name')), '2022-09-01').ipConfigurations[0].properties.privateIPAddress)]"
+                    },
+                    "networkInterface_PublicIPAddress": {
+                      "type": "string",
+                      "value": "[if(parameters('addPublicIPAddress'), reference(resourceId('Microsoft.Network/publicIPAddresses', format('{0}_PIP', parameters('networkInterface_Name'))), '2023-06-01').ipAddress, '')]"
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "outputs": {
+            "virtualMachine_Name": {
+              "type": "string",
+              "value": "[parameters('virtualMachine_Name')]"
+            },
+            "virtualMachine_Id": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachine_Name'))]"
+            },
+            "networkInterface_Name": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', parameters('networkInterface_Name')), '2025-04-01').outputs.networkInterface_Name.value]"
+            },
+            "networkInterface_ID": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', parameters('networkInterface_Name')), '2025-04-01').outputs.networkInterface_ID.value]"
+            },
+            "networkInterface_IPConfig0_Name": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', parameters('networkInterface_Name')), '2025-04-01').outputs.networkInterface_IPConfig0_Name.value]"
+            },
+            "networkInterface_IPConfig0_ID": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', parameters('networkInterface_Name')), '2025-04-01').outputs.networkInterface_IPConfig0_ID.value]"
+            },
+            "networkInterface_PrivateIPAddress": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', parameters('networkInterface_Name')), '2025-04-01').outputs.networkInterface_PrivateIPAddress.value]"
+            },
+            "networkInterface_PublicIPAddress": {
+              "type": "string",
+              "value": "[if(parameters('addPublicIPAddress'), reference(resourceId('Microsoft.Resources/deployments', parameters('networkInterface_Name')), '2025-04-01').outputs.networkInterface_PublicIPAddress.value, '')]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', parameters('virtualNetworkName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "[parameters('clientVMName')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "virtualMachine_Name": {
+            "value": "[parameters('clientVMName')]"
+          },
+          "virtualMachine_Size": {
+            "value": "[parameters('VMSize')]"
+          },
+          "virtualMachine_AdminUsername": {
+            "value": "[parameters('VMAdminUsername')]"
+          },
+          "virtualMachine_AdminPassword": {
+            "value": "[parameters('VMAdminPassword')]"
+          },
+          "acceleratedNetworking": {
+            "value": false
+          },
+          "subnet_ID": {
+            "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('clientSubnetName'))]"
+          },
+          "addPublicIPAddress": {
+            "value": false
+          },
+          "tagValues": {
+            "value": {}
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.41.2.15936",
+              "templateHash": "8368892544794916642"
+            }
+          },
+          "parameters": {
+            "virtualMachine_Name": {
+              "type": "string",
+              "maxLength": 15,
+              "metadata": {
+                "description": "Name of the Virtual Machine"
+              }
+            },
+            "virtualMachine_Size": {
+              "type": "string",
+              "metadata": {
+                "description": "Size of the Virtual Machine\nExamples:\nB2ms - 2 Core 8GB Ram - Cannot use Accelerated Networking\nD2as_v5 2 Core 8GB Ram - Uses Accelerated Networking"
+              }
+            },
+            "virtualMachine_AdminUsername": {
+              "type": "string",
+              "metadata": {
+                "description": "Admin Username for the Virtual Machine"
+              }
+            },
+            "virtualMachine_AdminPassword": {
+              "type": "securestring",
+              "metadata": {
+                "description": "Password for the Virtual Machine Admin User"
+              }
+            },
+            "networkInterface_Name": {
+              "type": "string",
+              "defaultValue": "[format('{0}_NetworkInterface', parameters('virtualMachine_Name'))]",
+              "metadata": {
+                "description": "Name of the Virtual Machines Network Interface"
+              }
+            },
+            "acceleratedNetworking": {
+              "type": "bool",
+              "metadata": {
+                "description": "True enables Accelerated Networking and False disabled it.  Not all sizes support Accel Net"
+              }
+            },
+            "subnet_ID": {
+              "type": "string",
+              "metadata": {
+                "description": "The Resource ID of the subnet to which the Network Interface will be assigned."
+              }
+            },
+            "virtualMachine_ScriptFileLocation": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Location of the file to be ran while the Virtual Machine is being created.  Ensure that the path ends with a /\nExample: https://example.com/scripts/"
+              }
+            },
+            "virtualMachine_ScriptFileName": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Name of the file to be ran while the Virtual Machine is being created\nExample: WinServ2022_ConfigScript_General.ps1"
+              }
+            },
+            "commandToExecute": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "'Command to execute while the Virtual Machine is being created.\nExample:\n'powershell.exe -ExecutionPolicy Unrestricted -File <file name.ps1>'\n"
+              }
+            },
+            "addPublicIPAddress": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Adds a Public IP to the Network Interface of the Virtual Machine"
+              }
+            },
+            "privateIPAllocationMethod": {
+              "type": "string",
+              "defaultValue": "Dynamic",
+              "allowedValues": [
+                "Dynamic",
+                "Static"
+              ],
+              "metadata": {
+                "description": "Sets the allocation mode of the IP Address of the Network Interface to either Dynamic or Static."
+              }
+            },
+            "privateIPAddress": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Enter the Static IP Address here if privateIPAllocationMethod is set to Static."
+              }
+            },
+            "addtoloadbalancer": {
+              "type": "bool",
+              "defaultValue": false
+            },
+            "loadbalancername": {
+              "type": "string",
+              "defaultValue": ""
+            },
+            "tagValues": {
+              "type": "object",
+              "defaultValue": {}
+            },
+            "UsecustomLocation": {
+              "type": "bool",
+              "defaultValue": false
+            },
+            "customlocation": {
+              "type": "string",
+              "defaultValue": "eastus"
+            }
+          },
+          "variables": {
+            "virtualMachine_ScriptFileUri": "[format('{0}{1}', parameters('virtualMachine_ScriptFileLocation'), parameters('virtualMachine_ScriptFileName'))]",
+            "location": "[if(parameters('UsecustomLocation'), parameters('customlocation'), resourceGroup().location)]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Compute/virtualMachines",
+              "apiVersion": "2022-11-01",
+              "name": "[parameters('virtualMachine_Name')]",
+              "location": "[variables('location')]",
+              "identity": {
+                "type": "SystemAssigned"
+              },
+              "properties": {
+                "hardwareProfile": {
+                  "vmSize": "[parameters('virtualMachine_Size')]"
+                },
+                "storageProfile": {
+                  "imageReference": {
+                    "publisher": "MicrosoftWindowsServer",
+                    "offer": "WindowsServer",
+                    "sku": "2022-datacenter-azure-edition",
+                    "version": "latest"
+                  },
+                  "osDisk": {
+                    "osType": "Windows",
+                    "name": "[format('{0}_OsDisk_1', parameters('virtualMachine_Name'))]",
+                    "createOption": "FromImage",
+                    "caching": "ReadWrite",
+                    "managedDisk": {
+                      "storageAccountType": "Standard_LRS"
+                    },
+                    "deleteOption": "Delete",
+                    "diskSizeGB": 127
+                  },
+                  "dataDisks": [],
+                  "diskControllerType": "SCSI"
+                },
+                "osProfile": {
+                  "computerName": "[parameters('virtualMachine_Name')]",
+                  "adminUsername": "[parameters('virtualMachine_AdminUsername')]",
+                  "adminPassword": "[parameters('virtualMachine_AdminPassword')]",
+                  "windowsConfiguration": {
+                    "provisionVMAgent": true,
+                    "enableAutomaticUpdates": true,
+                    "patchSettings": {
+                      "patchMode": "AutomaticByOS",
+                      "assessmentMode": "ImageDefault",
+                      "enableHotpatching": false
+                    },
+                    "enableVMAgentPlatformUpdates": false
+                  },
+                  "secrets": [],
+                  "allowExtensionOperations": true
+                },
+                "networkProfile": {
+                  "networkInterfaces": [
+                    {
+                      "id": "[reference(resourceId('Microsoft.Resources/deployments', parameters('networkInterface_Name')), '2025-04-01').outputs.networkInterface_ID.value]",
+                      "properties": {
+                        "deleteOption": "Delete"
+                      }
+                    }
+                  ]
+                },
+                "diagnosticsProfile": {
+                  "bootDiagnostics": {
+                    "enabled": true
+                  }
+                },
+                "evictionPolicy": "Deallocate",
+                "priority": "Spot"
+              },
+              "tags": "[parameters('tagValues')]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Resources/deployments', parameters('networkInterface_Name'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Compute/virtualMachines/extensions",
+              "apiVersion": "2022-11-01",
+              "name": "[format('{0}/{1}', parameters('virtualMachine_Name'), 'AzureNetworkWatcherExtension')]",
+              "location": "[variables('location')]",
+              "properties": {
+                "autoUpgradeMinorVersion": true,
+                "publisher": "Microsoft.Azure.NetworkWatcher",
+                "type": "NetworkWatcherAgentWindows",
+                "typeHandlerVersion": "1.4"
+              },
+              "tags": "[parameters('tagValues')]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachine_Name'))]"
+              ]
+            },
+            {
+              "condition": "[not(equals(parameters('virtualMachine_ScriptFileName'), ''))]",
+              "type": "Microsoft.Compute/virtualMachines/extensions",
+              "apiVersion": "2021-11-01",
+              "name": "[format('{0}/{1}', parameters('virtualMachine_Name'), 'installcustomscript')]",
+              "location": "[variables('location')]",
+              "properties": {
+                "publisher": "Microsoft.Compute",
+                "type": "CustomScriptExtension",
+                "typeHandlerVersion": "1.9",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                  "fileUris": [
+                    "[variables('virtualMachine_ScriptFileUri')]"
+                  ]
+                },
+                "protectedSettings": {
+                  "commandToExecute": "[parameters('commandToExecute')]"
+                }
+              },
+              "tags": "[parameters('tagValues')]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachine_Name'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Resources/deployments",
+              "apiVersion": "2025-04-01",
+              "name": "[parameters('networkInterface_Name')]",
+              "properties": {
+                "expressionEvaluationOptions": {
+                  "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                  "location": {
+                    "value": "[variables('location')]"
+                  },
+                  "acceleratedNetworking": {
+                    "value": "[parameters('acceleratedNetworking')]"
+                  },
+                  "networkInterface_Name": {
+                    "value": "[parameters('networkInterface_Name')]"
+                  },
+                  "subnet_ID": {
+                    "value": "[parameters('subnet_ID')]"
+                  },
+                  "addPublicIPAddress": {
+                    "value": "[parameters('addPublicIPAddress')]"
+                  },
+                  "privateIPAllocationMethod": {
+                    "value": "[parameters('privateIPAllocationMethod')]"
+                  },
+                  "privateIPAddress": {
+                    "value": "[parameters('privateIPAddress')]"
+                  },
+                  "addtoloadbalancer": {
+                    "value": "[parameters('addtoloadbalancer')]"
+                  },
+                  "loadbalancername": {
+                    "value": "[parameters('loadbalancername')]"
+                  },
+                  "tagValues": {
+                    "value": "[parameters('tagValues')]"
+                  }
+                },
+                "template": {
+                  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                  "contentVersion": "1.0.0.0",
+                  "metadata": {
+                    "_generator": {
+                      "name": "bicep",
+                      "version": "0.41.2.15936",
+                      "templateHash": "1971393346978754995"
+                    }
+                  },
+                  "parameters": {
+                    "networkInterface_Name": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Name of the Virtual Machines Network Interface"
+                      }
+                    },
+                    "location": {
+                      "type": "string",
+                      "defaultValue": "[resourceGroup().location]"
+                    },
+                    "acceleratedNetworking": {
+                      "type": "bool",
+                      "metadata": {
+                        "description": "True enables Accelerated Networking and False disabled it.  Not all virtualMachine sizes support Accel Net"
+                      }
+                    },
+                    "privateIPAllocationMethod": {
+                      "type": "string",
+                      "defaultValue": "Dynamic",
+                      "allowedValues": [
+                        "Dynamic",
+                        "Static"
+                      ],
+                      "metadata": {
+                        "description": "Sets the allocation mode of the IP Address of the Network Interface to either Dynamic or Static."
+                      }
+                    },
+                    "privateIPAddress": {
+                      "type": "string",
+                      "defaultValue": "",
+                      "metadata": {
+                        "description": "Enter the Static IP Address here if privateIPAllocationMethod is set to Static."
+                      }
+                    },
+                    "subnet_ID": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "The Resource ID of the subnet to which the Network Interface will be assigned."
+                      }
+                    },
+                    "addPublicIPAddress": {
+                      "type": "bool",
+                      "defaultValue": false,
+                      "metadata": {
+                        "description": "Adds a Public IP to the Network Interface of the Virtual Machine if true."
+                      }
+                    },
+                    "addtoloadbalancer": {
+                      "type": "bool",
+                      "defaultValue": false
+                    },
+                    "loadbalancername": {
+                      "type": "string",
+                      "defaultValue": ""
+                    },
+                    "IPForward": {
+                      "type": "bool",
+                      "defaultValue": false
+                    },
+                    "tagValues": {
+                      "type": "object",
+                      "defaultValue": {}
+                    }
+                  },
+                  "resources": [
+                    {
+                      "condition": "[not(parameters('addPublicIPAddress'))]",
+                      "type": "Microsoft.Network/networkInterfaces",
+                      "apiVersion": "2022-09-01",
+                      "name": "[parameters('networkInterface_Name')]",
+                      "location": "[parameters('location')]",
+                      "properties": {
+                        "ipConfigurations": [
+                          {
+                            "name": "ipconfig0",
+                            "properties": {
+                              "privateIPAllocationMethod": "[parameters('privateIPAllocationMethod')]",
+                              "subnet": {
+                                "id": "[parameters('subnet_ID')]"
+                              },
+                              "primary": true,
+                              "privateIPAddressVersion": "IPv4",
+                              "privateIPAddress": "[parameters('privateIPAddress')]",
+                              "loadBalancerBackendAddressPools": "[if(parameters('addtoloadbalancer'), createArray(createObject('id', resourceId('Microsoft.Network/loadBalancers/backendAddressPools', parameters('loadbalancername'), 'bep'))), createArray())]"
+                            }
+                          }
+                        ],
+                        "enableAcceleratedNetworking": "[parameters('acceleratedNetworking')]",
+                        "enableIPForwarding": "[parameters('IPForward')]",
+                        "disableTcpStateTracking": false,
+                        "nicType": "Standard"
+                      },
+                      "tags": "[parameters('tagValues')]"
+                    },
+                    {
+                      "condition": "[parameters('addPublicIPAddress')]",
+                      "type": "Microsoft.Network/networkInterfaces",
+                      "apiVersion": "2022-09-01",
+                      "name": "[parameters('networkInterface_Name')]",
+                      "location": "[parameters('location')]",
+                      "properties": {
+                        "ipConfigurations": [
+                          {
+                            "name": "ipconfig0",
+                            "properties": {
+                              "privateIPAllocationMethod": "[parameters('privateIPAllocationMethod')]",
+                              "subnet": {
+                                "id": "[parameters('subnet_ID')]"
+                              },
+                              "primary": true,
+                              "privateIPAddressVersion": "IPv4",
+                              "privateIPAddress": "[parameters('privateIPAddress')]",
+                              "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', format('{0}_PIP', parameters('networkInterface_Name')))]"
+                              },
+                              "loadBalancerBackendAddressPools": "[if(parameters('addtoloadbalancer'), createArray(createObject('id', resourceId('Microsoft.Network/loadBalancers/backendAddressPools', parameters('loadbalancername'), 'bep'))), createArray())]"
+                            }
+                          }
+                        ],
+                        "enableAcceleratedNetworking": "[parameters('acceleratedNetworking')]",
+                        "enableIPForwarding": false,
+                        "disableTcpStateTracking": false,
+                        "nicType": "Standard"
+                      },
+                      "tags": "[parameters('tagValues')]",
+                      "dependsOn": [
+                        "[resourceId('Microsoft.Network/publicIPAddresses', format('{0}_PIP', parameters('networkInterface_Name')))]"
+                      ]
+                    },
+                    {
+                      "condition": "[parameters('addPublicIPAddress')]",
+                      "type": "Microsoft.Network/publicIPAddresses",
+                      "apiVersion": "2023-06-01",
+                      "name": "[format('{0}_PIP', parameters('networkInterface_Name'))]",
+                      "location": "[parameters('location')]",
+                      "sku": {
+                        "name": "Standard",
+                        "tier": "Regional"
+                      },
+                      "properties": {
+                        "publicIPAddressVersion": "IPv4",
+                        "publicIPAllocationMethod": "Static",
+                        "idleTimeoutInMinutes": 4,
+                        "ipTags": []
+                      },
+                      "tags": "[parameters('tagValues')]"
+                    }
+                  ],
+                  "outputs": {
+                    "networkInterface_Name": {
+                      "type": "string",
+                      "value": "[if(parameters('addPublicIPAddress'), parameters('networkInterface_Name'), parameters('networkInterface_Name'))]"
+                    },
+                    "networkInterface_ID": {
+                      "type": "string",
+                      "value": "[if(parameters('addPublicIPAddress'), resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterface_Name')), resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterface_Name')))]"
+                    },
+                    "networkInterface_IPConfig0_Name": {
+                      "type": "string",
+                      "value": "[if(parameters('addPublicIPAddress'), reference(resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterface_Name')), '2022-09-01').ipConfigurations[0].name, reference(resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterface_Name')), '2022-09-01').ipConfigurations[0].name)]"
+                    },
+                    "networkInterface_IPConfig0_ID": {
+                      "type": "string",
+                      "value": "[if(parameters('addPublicIPAddress'), reference(resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterface_Name')), '2022-09-01').ipConfigurations[0].id, reference(resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterface_Name')), '2022-09-01').ipConfigurations[0].id)]"
+                    },
+                    "networkInterface_PrivateIPAddress": {
+                      "type": "string",
+                      "value": "[if(parameters('addPublicIPAddress'), reference(resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterface_Name')), '2022-09-01').ipConfigurations[0].properties.privateIPAddress, reference(resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterface_Name')), '2022-09-01').ipConfigurations[0].properties.privateIPAddress)]"
+                    },
+                    "networkInterface_PublicIPAddress": {
+                      "type": "string",
+                      "value": "[if(parameters('addPublicIPAddress'), reference(resourceId('Microsoft.Network/publicIPAddresses', format('{0}_PIP', parameters('networkInterface_Name'))), '2023-06-01').ipAddress, '')]"
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "outputs": {
+            "virtualMachine_Name": {
+              "type": "string",
+              "value": "[parameters('virtualMachine_Name')]"
+            },
+            "virtualMachine_Id": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachine_Name'))]"
+            },
+            "networkInterface_Name": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', parameters('networkInterface_Name')), '2025-04-01').outputs.networkInterface_Name.value]"
+            },
+            "networkInterface_ID": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', parameters('networkInterface_Name')), '2025-04-01').outputs.networkInterface_ID.value]"
+            },
+            "networkInterface_IPConfig0_Name": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', parameters('networkInterface_Name')), '2025-04-01').outputs.networkInterface_IPConfig0_Name.value]"
+            },
+            "networkInterface_IPConfig0_ID": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', parameters('networkInterface_Name')), '2025-04-01').outputs.networkInterface_IPConfig0_ID.value]"
+            },
+            "networkInterface_PrivateIPAddress": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', parameters('networkInterface_Name')), '2025-04-01').outputs.networkInterface_PrivateIPAddress.value]"
+            },
+            "networkInterface_PublicIPAddress": {
+              "type": "string",
+              "value": "[if(parameters('addPublicIPAddress'), reference(resourceId('Microsoft.Resources/deployments', parameters('networkInterface_Name')), '2025-04-01').outputs.networkInterface_PublicIPAddress.value, '')]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', parameters('virtualNetworkName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "[parameters('applicationGateWayName')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "applicationGateway_Name": {
+            "value": "[parameters('applicationGateWayName')]"
+          },
+          "applicationGateway_SubnetID": {
+            "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('appGatewaySubnetName'))]"
+          },
+          "publicIP_ApplicationGateway_Name": {
+            "value": "[parameters('publicIPAddressName')]"
+          },
+          "keyVaultName": {
+            "value": "[parameters('keyVaultName')]"
+          },
+          "keyvault_managed_ID": {
+            "value": "[parameters('keyvault_managed_ID')]"
+          },
+          "certname": {
+            "value": "[parameters('certname')]"
+          },
+          "isWAF": {
+            "value": false
+          },
+          "isE2ESSL": {
+            "value": false
+          },
+          "nossl": {
+            "value": false
+          },
+          "usePrivateFrontend": {
+            "value": true
+          },
+          "useBothPrivateAndPublicFrontend": {
+            "value": false
+          },
+          "privatefrontendIP": {
+            "value": "[parameters('privatefrontendIP')]"
+          },
+          "backendpoolIPAddresses": {
+            "value": [
+              "[reference(resourceId('Microsoft.Resources/deployments', parameters('backendVMName')), '2025-04-01').outputs.networkInterface_PrivateIPAddress.value]"
+            ]
+          },
+          "backendPoolFQDNs": {
+            "value": []
+          },
+          "tagValues": {
+            "value": {}
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.41.2.15936",
+              "templateHash": "6986454080813715260"
+            }
+          },
+          "parameters": {
+            "applicationGateway_Name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Application Gateway"
+              }
+            },
+            "publicIP_ApplicationGateway_Name": {
+              "type": "string",
+              "defaultValue": "[format('{0}_PIP', parameters('applicationGateway_Name'))]",
+              "metadata": {
+                "description": "Name of the Public IP Address resource of the Applciation Gateway"
+              }
+            },
+            "applicationGateway_SubnetID": {
+              "type": "string"
+            },
+            "applicationGatewayWAF_Name": {
+              "type": "string",
+              "defaultValue": "[format('{0}_WAF', parameters('applicationGateway_Name'))]",
+              "metadata": {
+                "description": "Name of the Web Application Firewall of the Application Gateway"
+              }
+            },
+            "backendPoolFQDNs": {
+              "type": "array",
+              "defaultValue": [],
+              "metadata": {
+                "description": "FQDN of the website in the backend pool of the Application Gateway"
+              }
+            },
+            "certname": {
+              "type": "string",
+              "defaultValue": "danwheeler-rocks-wildcard"
+            },
+            "keyvault_managed_ID": {
+              "type": "string",
+              "defaultValue": "DWKeyVaultManagedIdentity"
+            },
+            "keyVaultName": {
+              "type": "string",
+              "defaultValue": "DanWheelerVaultStr"
+            },
+            "isWAF": {
+              "type": "bool",
+              "defaultValue": false
+            },
+            "isE2ESSL": {
+              "type": "bool",
+              "defaultValue": false
+            },
+            "backendpoolIPAddresses": {
+              "type": "array",
+              "defaultValue": []
+            },
+            "nossl": {
+              "type": "bool",
+              "defaultValue": false
+            },
+            "pathmap": {
+              "type": "bool",
+              "defaultValue": false
+            },
+            "path": {
+              "type": "string",
+              "defaultValue": "/path"
+            },
+            "backendpoolpathIPAddresses": {
+              "type": "array",
+              "defaultValue": []
+            },
+            "useCustomProbe": {
+              "type": "bool",
+              "defaultValue": false
+            },
+            "usePrivateFrontend": {
+              "type": "bool",
+              "defaultValue": false
+            },
+            "useBothPrivateAndPublicFrontend": {
+              "type": "bool",
+              "defaultValue": false
+            },
+            "privatefrontendIP": {
+              "type": "string",
+              "defaultValue": ""
+            },
+            "tagValues": {
+              "type": "object",
+              "defaultValue": {}
+            }
+          },
+          "variables": {
+            "copy": [
+              {
+                "name": "backendAddressesFromIP",
+                "count": "[length(parameters('backendpoolIPAddresses'))]",
+                "input": {
+                  "ipAddress": "[parameters('backendpoolIPAddresses')[copyIndex('backendAddressesFromIP')]]"
+                }
+              },
+              {
+                "name": "backendAddressesFromFQDN",
+                "count": "[length(parameters('backendPoolFQDNs'))]",
+                "input": {
+                  "fqdn": "[parameters('backendPoolFQDNs')[copyIndex('backendAddressesFromFQDN')]]"
+                }
+              },
+              {
+                "name": "pathbackendaddresses",
+                "count": "[length(parameters('backendpoolpathIPAddresses'))]",
+                "input": {
+                  "ipAddress": "[parameters('backendpoolpathIPAddresses')[copyIndex('pathbackendaddresses')]]"
+                }
+              }
+            ],
+            "keyVaultDnsSuffix": "[environment().suffixes.keyvaultDns]",
+            "keyVaultUrl": "[format('https://{0}{1}', parameters('keyVaultName'), variables('keyVaultDnsSuffix'))]",
+            "frontendID": "[resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', parameters('applicationGateway_Name'), 'fip_pub')]",
+            "privfrontendID": "[if(parameters('usePrivateFrontend'), resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', parameters('applicationGateway_Name'), 'fip_priv'), if(parameters('useBothPrivateAndPublicFrontend'), resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', parameters('applicationGateway_Name'), 'fip_priv'), null()))]",
+            "frontendPortID": "[if(parameters('nossl'), resourceId('Microsoft.Network/applicationGateways/frontendPorts', parameters('applicationGateway_Name'), 'port_80'), resourceId('Microsoft.Network/applicationGateways/frontendPorts', parameters('applicationGateway_Name'), 'port_443'))]",
+            "httpListenerID": "[if(parameters('nossl'), resourceId('Microsoft.Network/applicationGateways/httpListeners', parameters('applicationGateway_Name'), 'http_listener'), resourceId('Microsoft.Network/applicationGateways/httpListeners', parameters('applicationGateway_Name'), 'https_listener'))]",
+            "privhttpListenerID": "[if(parameters('nossl'), resourceId('Microsoft.Network/applicationGateways/httpListeners', parameters('applicationGateway_Name'), 'http_listener_priv'), resourceId('Microsoft.Network/applicationGateways/httpListeners', parameters('applicationGateway_Name'), 'https_listener_priv'))]",
+            "backendAddressPoolID": "[resourceId('Microsoft.Network/applicationGateways/backendAddressPools', parameters('applicationGateway_Name'), 'backend_pool')]",
+            "backendHTTPSettingsID": "[resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', parameters('applicationGateway_Name'), 'http-settings')]",
+            "backendHTTPSSettingsID": "[resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', parameters('applicationGateway_Name'), 'https-settings')]",
+            "location": "[resourceGroup().location]",
+            "backendAddresses": "[if(equals(parameters('backendPoolFQDNs'), createArray()), variables('backendAddressesFromIP'), variables('backendAddressesFromFQDN'))]",
+            "frontendIPConfiguration": "[if(parameters('usePrivateFrontend'), createArray(createObject('name', 'fip_priv', 'properties', createObject('privateIPAllocationMethod', 'Static', 'privateIPAddress', parameters('privatefrontendIP'), 'subnet', createObject('id', parameters('applicationGateway_SubnetID'))))), if(parameters('useBothPrivateAndPublicFrontend'), createArray(createObject('name', 'fip_pub', 'properties', createObject('privateIPAllocationMethod', 'Dynamic', 'publicIPAddress', createObject('id', resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIP_ApplicationGateway_Name'))))), createObject('name', 'fip_priv', 'properties', createObject('privateIPAllocationMethod', 'Static', 'privateIPAddress', parameters('privatefrontendIP'), 'subnet', createObject('id', parameters('applicationGateway_SubnetID'))))), createArray(createObject('name', 'fip_pub', 'properties', createObject('privateIPAllocationMethod', 'Dynamic', 'publicIPAddress', createObject('id', resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIP_ApplicationGateway_Name'))))))))]",
+            "httpListeners": "[if(parameters('usePrivateFrontend'), createArray(createObject('name', if(parameters('nossl'), 'http_listener', 'https_listener'), 'properties', createObject('frontendIPConfiguration', createObject('id', variables('privfrontendID')), 'frontendPort', createObject('id', variables('frontendPortID')), 'protocol', if(parameters('nossl'), 'Http', 'Https'), 'hostNames', createArray(), 'requireServerNameIndication', false(), 'sslCertificate', if(parameters('nossl'), null(), createObject('id', resourceId('Microsoft.Network/applicationGateways/sslCertificates', parameters('applicationGateway_Name'), 'danwheelerrockswildcard')))))), if(parameters('useBothPrivateAndPublicFrontend'), createArray(createObject('name', if(parameters('nossl'), 'http_listener', 'https_listener'), 'properties', createObject('frontendIPConfiguration', createObject('id', variables('frontendID')), 'frontendPort', createObject('id', variables('frontendPortID')), 'protocol', if(parameters('nossl'), 'Http', 'Https'), 'hostNames', createArray(), 'requireServerNameIndication', false(), 'sslCertificate', if(parameters('nossl'), null(), createObject('id', resourceId('Microsoft.Network/applicationGateways/sslCertificates', parameters('applicationGateway_Name'), 'danwheelerrockswildcard'))))), createObject('name', if(parameters('nossl'), 'http_listener_priv', 'https_listener_priv'), 'properties', createObject('frontendIPConfiguration', createObject('id', variables('privfrontendID')), 'frontendPort', createObject('id', variables('frontendPortID')), 'protocol', if(parameters('nossl'), 'Http', 'Https'), 'hostNames', createArray(), 'requireServerNameIndication', false(), 'sslCertificate', if(parameters('nossl'), null(), createObject('id', resourceId('Microsoft.Network/applicationGateways/sslCertificates', parameters('applicationGateway_Name'), 'danwheelerrockswildcard')))))), createArray(createObject('name', if(parameters('nossl'), 'http_listener', 'https_listener'), 'properties', createObject('frontendIPConfiguration', createObject('id', variables('frontendID')), 'frontendPort', createObject('id', variables('frontendPortID')), 'protocol', if(parameters('nossl'), 'Http', 'Https'), 'hostNames', createArray(), 'requireServerNameIndication', false(), 'sslCertificate', if(parameters('nossl'), null(), createObject('id', resourceId('Microsoft.Network/applicationGateways/sslCertificates', parameters('applicationGateway_Name'), 'danwheelerrockswildcard'))))))))]",
+            "routingrules": "[if(parameters('pathmap'), createArray(createObject('name', if(parameters('nossl'), 'httproutingrule', 'httpsroutingrule'), 'properties', createObject('ruleType', 'PathBasedRouting', 'priority', 100, 'httpListener', createObject('id', variables('httpListenerID')), 'urlPathMap', createObject('id', resourceId('Microsoft.Network/applicationGateways/urlPathMaps', parameters('applicationGateway_Name'), 'urlPathMap'))))), if(parameters('useBothPrivateAndPublicFrontend'), createArray(createObject('name', if(parameters('nossl'), 'httproutingrule', 'httpsroutingrule'), 'properties', createObject('ruleType', 'Basic', 'priority', 100, 'httpListener', createObject('id', variables('httpListenerID')), 'backendAddressPool', createObject('id', variables('backendAddressPoolID')), 'backendHttpSettings', if(parameters('isE2ESSL'), createObject('id', variables('backendHTTPSSettingsID')), createObject('id', variables('backendHTTPSettingsID'))))), createObject('name', if(parameters('nossl'), 'privhttproutingrule', 'privhttpsroutingrule'), 'properties', createObject('ruleType', 'Basic', 'priority', 200, 'httpListener', createObject('id', variables('privhttpListenerID')), 'backendAddressPool', createObject('id', variables('backendAddressPoolID')), 'backendHttpSettings', if(parameters('isE2ESSL'), createObject('id', variables('backendHTTPSSettingsID')), createObject('id', variables('backendHTTPSettingsID')))))), createArray(createObject('name', if(parameters('nossl'), 'httproutingrule', 'httpsroutingrule'), 'properties', createObject('ruleType', 'Basic', 'priority', 100, 'httpListener', createObject('id', variables('httpListenerID')), 'backendAddressPool', createObject('id', variables('backendAddressPoolID')), 'backendHttpSettings', if(parameters('isE2ESSL'), createObject('id', variables('backendHTTPSSettingsID')), createObject('id', variables('backendHTTPSettingsID'))))))))]"
+          },
+          "resources": [
+            {
+              "condition": "[parameters('isWAF')]",
+              "type": "Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies",
+              "apiVersion": "2023-11-01",
+              "name": "[parameters('applicationGatewayWAF_Name')]",
+              "location": "[variables('location')]",
+              "properties": {
+                "customRules": [],
+                "policySettings": {
+                  "requestBodyCheck": true,
+                  "maxRequestBodySizeInKb": 128,
+                  "fileUploadLimitInMb": 100,
+                  "state": "Enabled",
+                  "mode": "Detection",
+                  "requestBodyInspectLimitInKB": 128,
+                  "fileUploadEnforcement": true,
+                  "requestBodyEnforcement": true
+                },
+                "managedRules": {
+                  "managedRuleSets": [
+                    {
+                      "ruleSetType": "OWASP",
+                      "ruleSetVersion": "3.2",
+                      "ruleGroupOverrides": []
+                    },
+                    {
+                      "ruleSetType": "Microsoft_BotManagerRuleSet",
+                      "ruleSetVersion": "0.1",
+                      "ruleGroupOverrides": []
+                    }
+                  ],
+                  "exclusions": []
+                }
+              },
+              "tags": "[parameters('tagValues')]"
+            },
+            {
+              "type": "Microsoft.Network/publicIPAddresses",
+              "apiVersion": "2022-11-01",
+              "name": "[parameters('publicIP_ApplicationGateway_Name')]",
+              "location": "[variables('location')]",
+              "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+              },
+              "properties": {
+                "publicIPAddressVersion": "IPv4",
+                "publicIPAllocationMethod": "Static",
+                "idleTimeoutInMinutes": 4,
+                "ipTags": []
+              },
+              "tags": "[parameters('tagValues')]"
+            },
+            {
+              "type": "Microsoft.Network/applicationGateways",
+              "apiVersion": "2022-11-01",
+              "name": "[parameters('applicationGateway_Name')]",
+              "location": "[variables('location')]",
+              "identity": "[if(parameters('nossl'), null(), createObject('type', 'UserAssigned', 'userAssignedIdentities', createObject(format('{0}', resourceId('Domain_resources_RG_2', 'Microsoft.ManagedIdentity/userAssignedIdentities/', parameters('keyvault_managed_ID'))), createObject())))]",
+              "properties": {
+                "sku": "[if(parameters('isWAF'), createObject('name', 'WAF_v2', 'tier', 'WAF_v2'), createObject('name', 'Standard_v2', 'tier', 'Standard_v2'))]",
+                "gatewayIPConfigurations": [
+                  {
+                    "name": "appGatewayIpConfig",
+                    "properties": {
+                      "subnet": {
+                        "id": "[parameters('applicationGateway_SubnetID')]"
+                      }
+                    }
+                  }
+                ],
+                "sslCertificates": "[if(parameters('nossl'), null(), createArray(createObject('name', 'danwheelerrockswildcard', 'properties', createObject('keyVaultSecretId', format('{0}/secrets/{1}', variables('keyVaultUrl'), parameters('certname'))))))]",
+                "trustedRootCertificates": [],
+                "trustedClientCertificates": [],
+                "sslProfiles": [],
+                "sslPolicy": {
+                  "policyType": "Predefined",
+                  "policyName": "AppGwSslPolicy20220101"
+                },
+                "frontendIPConfigurations": "[variables('frontendIPConfiguration')]",
+                "frontendPorts": [
+                  {
+                    "name": "port_80",
+                    "properties": {
+                      "port": 80
+                    }
+                  },
+                  {
+                    "name": "port_443",
+                    "properties": {
+                      "port": 443
+                    }
+                  }
+                ],
+                "backendAddressPools": "[if(parameters('pathmap'), createArray(createObject('name', 'backend_pool', 'properties', createObject('backendAddresses', variables('backendAddresses'))), createObject('name', 'backend_pool_path', 'properties', createObject('backendAddresses', variables('pathbackendaddresses')))), createArray(createObject('name', 'backend_pool', 'properties', createObject('backendAddresses', variables('backendAddresses')))))]",
+                "loadDistributionPolicies": [],
+                "backendHttpSettingsCollection": [
+                  {
+                    "name": "http-settings",
+                    "properties": {
+                      "port": 80,
+                      "protocol": "Http",
+                      "cookieBasedAffinity": "Disabled",
+                      "pickHostNameFromBackendAddress": true,
+                      "requestTimeout": 20
+                    }
+                  },
+                  {
+                    "name": "https-settings",
+                    "properties": {
+                      "port": 443,
+                      "protocol": "Https",
+                      "cookieBasedAffinity": "Disabled",
+                      "pickHostNameFromBackendAddress": true,
+                      "requestTimeout": 20,
+                      "probe": "[if(parameters('useCustomProbe'), createObject('id', resourceId('Microsoft.Network/applicationGateways/probes', parameters('applicationGateway_Name'), 'custom-probe')), null())]"
+                    }
+                  }
+                ],
+                "httpListeners": "[variables('httpListeners')]",
+                "listeners": [],
+                "urlPathMaps": "[if(parameters('pathmap'), createArray(createObject('name', 'urlPathMap', 'properties', createObject('defaultBackendAddressPool', createObject('id', resourceId('Microsoft.Network/applicationGateways/backendAddressPools', parameters('applicationGateway_Name'), 'backend_pool')), 'defaultBackendHttpSettings', createObject('id', resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', parameters('applicationGateway_Name'), 'http-settings')), 'defaultRedirectConfiguration', null(), 'pathRules', createArray(createObject('name', 'pathRule', 'properties', createObject('paths', createArray(parameters('path')), 'backendAddressPool', createObject('id', resourceId('Microsoft.Network/applicationGateways/backendAddressPools', parameters('applicationGateway_Name'), 'backend_pool_path')), 'backendHttpSettings', createObject('id', resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', parameters('applicationGateway_Name'), 'http-settings')), 'redirectConfiguration', null())))))), null())]",
+                "requestRoutingRules": "[variables('routingrules')]",
+                "routingRules": [],
+                "probes": "[if(parameters('useCustomProbe'), createArray(createObject('name', 'custom-probe', 'properties', createObject('pickHostNameFromBackendHttpSettings', true(), 'interval', 20, 'match', createObject('statusCodes', createArray('200', '302')), 'path', '/', 'port', if(parameters('isE2ESSL'), 443, 80), 'protocol', if(parameters('isE2ESSL'), 'Https', 'Http'), 'timeout', 30, 'unhealthyThreshold', 2))), createArray())]",
+                "rewriteRuleSets": [],
+                "redirectConfigurations": [],
+                "privateLinkConfigurations": [],
+                "enableHttp2": true,
+                "autoscaleConfiguration": {
+                  "minCapacity": 0,
+                  "maxCapacity": 2
+                },
+                "firewallPolicy": "[if(parameters('isWAF'), createObject('id', resourceId('Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies', parameters('applicationGatewayWAF_Name'))), null())]"
+              },
+              "tags": "[parameters('tagValues')]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies', parameters('applicationGatewayWAF_Name'))]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIP_ApplicationGateway_Name'))]"
+              ]
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', parameters('backendVMName'))]",
+        "[resourceId('Microsoft.Resources/deployments', parameters('virtualNetworkName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "[parameters('bastionName')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[resourceGroup().location]"
+          },
+          "bastion_name": {
+            "value": "[parameters('bastionName')]"
+          },
+          "bastion_SubnetID": {
+            "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), 'AzureBastionSubnet')]"
+          },
+          "tagValues": {
+            "value": {}
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.41.2.15936",
+              "templateHash": "1532175533677735218"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Azure Datacenter location that the main resouces will be deployed to."
+              }
+            },
+            "bastion_name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Azure Bastion"
+              }
+            },
+            "bastion_SubnetID": {
+              "type": "string",
+              "metadata": {
+                "description": "Resource ID of the subnet the Azure Bastion will be placed in.  The name of the subnet must be \"AzureBastionSubnet\""
+              }
+            },
+            "bastion_SKU": {
+              "type": "string",
+              "defaultValue": "Basic",
+              "allowedValues": [
+                "Basic",
+                "Standard"
+              ],
+              "metadata": {
+                "description": "SKU of the Azure Bastion"
+              }
+            },
+            "tagValues": {
+              "type": "object",
+              "defaultValue": {}
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Network/bastionHosts",
+              "apiVersion": "2022-09-01",
+              "name": "[parameters('bastion_name')]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "name": "[parameters('bastion_SKU')]"
+              },
+              "properties": {
+                "scaleUnits": 2,
+                "enableTunneling": false,
+                "enableIpConnect": false,
+                "disableCopyPaste": false,
+                "enableShareableLink": false,
+                "ipConfigurations": [
+                  {
+                    "name": "IpConf",
+                    "properties": {
+                      "privateIPAllocationMethod": "Dynamic",
+                      "publicIPAddress": {
+                        "id": "[resourceId('Microsoft.Network/publicIPAddresses', format('{0}_VIP', parameters('bastion_name')))]"
+                      },
+                      "subnet": {
+                        "id": "[parameters('bastion_SubnetID')]"
+                      }
+                    }
+                  }
+                ]
+              },
+              "tags": "[parameters('tagValues')]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', format('{0}_VIP', parameters('bastion_name')))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Network/publicIPAddresses",
+              "apiVersion": "2022-09-01",
+              "name": "[format('{0}_VIP', parameters('bastion_name'))]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+              },
+              "properties": {
+                "publicIPAddressVersion": "IPv4",
+                "publicIPAllocationMethod": "Static",
+                "idleTimeoutInMinutes": 4,
+                "ipTags": []
+              },
+              "tags": "[parameters('tagValues')]"
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', parameters('virtualNetworkName'))]"
+      ]
+    }
+  ]
+}
