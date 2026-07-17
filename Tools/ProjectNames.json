@@ -33,10 +33,10 @@
     "Name": "AZFW_Deployment"
   },
   {
-    "Name": "AGIC_StandalonePowershell"
+    "Name": "appgw_ACR_Lab"
   },
   {
-    "Name": "AFDx_Deployment"
+    "Name": "AGIC_StandalonePowershell"
   },
   {
     "Name": "NVA_RouteServer_POC"
@@ -66,16 +66,13 @@
     "Name": "appgw_ntlm_auth"
   },
   {
-    "Name": "Appgw_Webapp_backend"
-  },
-  {
     "Name": "AGCBYO_Helm"
   },
   {
-    "Name": "netisolationappgw_complexdnslab"
+    "Name": "Appgw_Webapp_backend"
   },
   {
-    "Name": "appgwAZFW_ZeroTrustLab"
+    "Name": "netisolationappgw_complexdnslab"
   },
   {
     "Name": "project_sneaky"
@@ -144,6 +141,9 @@
     "Name": "AGC_WAF_Lab"
   },
   {
-    "Name": "appgw_ACR_Lab"
+    "Name": "appgwAZFW_ZeroTrustLab"
+  },
+  {
+    "Name": "AFDx_Deployment"
   }
 ]
